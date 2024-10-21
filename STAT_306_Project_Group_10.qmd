@@ -16,14 +16,13 @@ When you click the **Render** button a document will be generated that includes 
 library(dplyr)
 library(tidyverse)
 library(ggplot2)
-library(dplyr)
 # install.packages("fastDummies")
 library(fastDummies)
 # install.packages('stringi')
 ```
 
 ```{r}
-cancer = read.csv("Breast Cancer METABRIC.csv", header=TRUE)
+cancer = read.csv("METABRIC_RNA_Mutation.csv", header=TRUE)[,1:31]
 cancer
 summary(cancer)
 ```
@@ -37,13 +36,13 @@ glimpse(cancer)
 The `echo: false` option disables the printing of code (only output is displayed).
 
 ```{r}
-boxplot(Tumor.Size~Tumor.Stage, data=cancer)
+boxplot(tumor_size~tumor_stage, data=cancer)
 ```
 
 ```{r}
 cancer_new <- cancer %>% 
-  filter(!is.na(Age.at.Diagnosis), !is.na(Tumor.Size), !is.na(Tumor.Stage), !is.na(Chemotherapy), !is.na(Hormone.Therapy), !is.na(Radio.Therapy), !is.na(Overall.Survival..Months.)) %>% 
-  select(Age.at.Diagnosis, Tumor.Size, Tumor.Stage, Chemotherapy, Hormone.Therapy, Radio.Therapy, Overall.Survival..Months.) %>% 
-  dummy_cols(select_columns = c("Tumor.Stage","Chemotherapy", "Hormone.Therapy", "Radio.Therapy"), remove_selected_columns = TRUE, remove_first_dummy  = TRUE)
+  filter(!is.na(age_at_diagnosis), !is.na(tumor_size), !is.na(tumor_stage), !is.na(chemotherapy), !is.na(hormone_therapy), !is.na(radio_therapy), !is.na(overall_survival_months)) %>% 
+  select(age_at_diagnosis, tumor_size, tumor_stage, chemotherapy, hormone_therapy, radio_therapy, overall_survival_months) %>% 
+  dummy_cols(select_columns = c("tumor_stage","chemotherapy", "hormone_therapy", "radio_therapy"), remove_selected_columns = TRUE, remove_first_dummy  = TRUE)
 cancer_new
 ```
