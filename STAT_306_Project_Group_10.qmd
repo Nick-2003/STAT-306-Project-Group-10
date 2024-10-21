@@ -4,7 +4,7 @@ format: pdf
 editor: visual
 ---
 
-## Quarto
+## STAT 306 Project (Group 10)
 
 Quarto enables you to weave together content and executable code into a finished document. To learn more about Quarto see <https://quarto.org>.
 
@@ -13,15 +13,35 @@ Quarto enables you to weave together content and executable code into a finished
 When you click the **Render** button a document will be generated that includes both content and the output of embedded code. You can embed code like this:
 
 ```{r}
+library(tidyverse)
+library(ggplot2)
+library(dplyr)
+# install.packages("fastDummies")
+library(fastDummies)
+```
+
+```{r}
 cancer = read.csv("Breast Cancer METABRIC.csv", header=TRUE)
 cancer
+summary(cancer)
 ```
 
 You can add options to executable code like this
 
 ```{r}
-#| echo: false
-2 * 2
+glimpse(cancer)
 ```
 
 The `echo: false` option disables the printing of code (only output is displayed).
+
+```{r}
+boxplot(Tumor.Size~Tumor.Stage, data=cancer)
+```
+
+```{r}
+cancer_new <- cancer %>% 
+  filter(!is.na(Age.at.Diagnosis), !is.na(Tumor.Size), !is.na(Tumor.Stage), !is.na(Chemotherapy), !is.na(Hormone.Therapy), !is.na(Radio.Therapy), !is.na(Overall.Survival..Months.)) %>% 
+  select(Age.at.Diagnosis, Tumor.Size, Tumor.Stage, Chemotherapy, Hormone.Therapy, Radio.Therapy, Overall.Survival..Months.) %>% 
+  dummy_cols(select_columns = c("Tumor.Stage","Chemotherapy", "Hormone.Therapy", "Radio.Therapy"), remove_selected_columns = TRUE, remove_first_dummy  = TRUE)
+cancer_new
+```
