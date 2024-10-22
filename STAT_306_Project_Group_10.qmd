@@ -27,16 +27,14 @@ cancer
 summary(cancer)
 ```
 
-You can add options to executable code like this
-
-```{r}
-glimpse(cancer)
-```
-
 The `echo: false` option disables the printing of code (only output is displayed).
 
 ```{r}
 boxplot(tumor_size~tumor_stage, data=cancer)
+```
+
+```{r}
+unique(cancer$pam50_._claudin.low_subtype)
 ```
 
 ```{r}
