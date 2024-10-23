@@ -35,6 +35,9 @@ boxplot(tumor_size~tumor_stage, data=cancer)
 
 ```{r}
 unique(cancer$pam50_._claudin.low_subtype)
+unique(cancer$her2_status_measured_by_snp6)
+unique(cancer$oncotree_code)
+unique(cancer$tumor_stage)
 ```
 
 ```{r}
