@@ -52,6 +52,11 @@ cancer_new
 ```{r}
 cancer_new_2 <- cancer %>% 
   filter(!is.na(age_at_diagnosis), !is.na(type_of_breast_surgery), !is.na(tumor_size), !is.na(tumor_stage), !is.na(chemotherapy), !is.na(hormone_therapy), !is.na(radio_therapy), !is.na(overall_survival_months), cancer_type_detailed == "Breast Invasive Ductal Carcinoma", overall_survival == 1) %>% 
-  select(age_at_diagnosis, tumor_size, tumor_stage, chemotherapy, hormone_therapy, radio_therapy, overall_survival_months) 
+  select(age_at_diagnosis, type_of_breast_surgery, tumor_stage, chemotherapy, hormone_therapy, radio_therapy, overall_survival_months) 
 cancer_new_2
+```
+
+```{r}
+fullmod = lm(overall_survival_months ~ .*.,data=cancer_new_2)
+step(fullmod, direction = "both")
 ```
