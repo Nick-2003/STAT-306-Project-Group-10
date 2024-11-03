@@ -4,9 +4,7 @@ format: pdf
 editor: visual
 ---
 
-# STAT 306 Project 
-
-## Nicholas Tam, Ivy Cheung, Kaichi Nakajima, Kevin Liu (Group 10)
+# STAT 306 Project (Group 10)
 
 ## Introduction
 
@@ -39,7 +37,7 @@ library(fastDummies)
 # install.packages('stringi')
 ```
 
-### Uploading relevant table 
+### Uploading relevant table
 
 -   
 
@@ -49,44 +47,45 @@ cancer
 summary(cancer)
 ```
 
-### Narrowing down to data of interest 
-
--   
+### Narrowing down to data of interest
 
 ```{r}
-cancer_new <- cancer %>% 
+cancer_new_2 <- cancer %>% 
   filter(!is.na(age_at_diagnosis), !is.na(type_of_breast_surgery), !is.na(tumor_size), !is.na(tumor_stage), !is.na(chemotherapy), !is.na(hormone_therapy), !is.na(radio_therapy), !is.na(overall_survival_months), cancer_type_detailed == "Breast Invasive Ductal Carcinoma", overall_survival == 1) %>% 
   select(age_at_diagnosis, type_of_breast_surgery, tumor_stage, chemotherapy, hormone_therapy, radio_therapy, overall_survival_months) 
-cancer_new
+cancer_new_2
 ```
 
 ```{r}
 boxplot(tumor_size~tumor_stage, data=cancer)
 ```
 
-### Exploratory data analysis 
+### Exploratory data analysis
 
--   
+```{r}
+unique(cancer$pam50_._claudin.low_subtype)
+unique(cancer$her2_status_measured_by_snp6)
+unique(cancer$oncotree_code)
+unique(cancer$tumor_stage)
+```
 
-### Model selection
+```{r}
+cancer_new <- cancer %>% 
+  filter(!is.na(age_at_diagnosis), !is.na(tumor_size), !is.na(tumor_stage), !is.na(chemotherapy), !is.na(hormone_therapy), !is.na(radio_therapy), !is.na(overall_survival_months)) %>% 
+  select(age_at_diagnosis, tumor_size, tumor_stage, chemotherapy, hormone_therapy, radio_therapy, overall_survival_months) 
+# %>% 
+#   dummy_cols(select_columns = c("tumor_stage","chemotherapy", "hormone_therapy", "radio_therapy"), remove_selected_columns = TRUE, remove_first_dummy  = TRUE)
+cancer_new
+```
 
--   
+```{r}
+cancer_new_2 <- cancer %>% 
+  filter(!is.na(age_at_diagnosis), !is.na(type_of_breast_surgery), !is.na(tumor_size), !is.na(tumor_stage), !is.na(chemotherapy), !is.na(hormone_therapy), !is.na(radio_therapy), !is.na(overall_survival_months), cancer_type_detailed == "Breast Invasive Ductal Carcinoma", overall_survival == 1) %>% 
+  select(age_at_diagnosis, type_of_breast_surgery, tumor_stage, chemotherapy, hormone_therapy, radio_therapy, overall_survival_months) 
+cancer_new_2
+```
 
 ```{r}
 fullmod = lm(overall_survival_months ~ .*.,data=cancer_new_2)
 step(fullmod, direction = "both")
 ```
-
-## Conclusion
-
-## Appendix 
-
--   Breast cancer gene expression profiles (METABRIC). Kaggle. (2016, May 10). <https://www.kaggle.com/datasets/raghadalharbi/breast-cancer-gene-expression-profiles-metabric>   
-
--   CBioPortal for Cancer Genomics. (n.d.). <https://www.cbioportal.org/study/summary?id=brca_metabric>
-
--   DePolo, J. (2024, October 2). Invasive ductal carcinoma (IDC). Breastcancer.org - Breast Cancer Information and Support. <https://www.breastcancer.org/types/invasive-ductal-carcinoma>  
-
--   Wright , P. (2023, March 21). Invasive ductal carcinoma (IDC). Johns Hopkins Medicine. <https://www.hopkinsmedicine.org/health/conditions-and-diseases/breast-cancer/invasive-ductal-carcinoma-idc#:~:text=Radiation%20therapy%20might%20be%20part,lymph%20nodes%2C%E2%80%9D%20Wright%20says>. 
-
--   Tumor size and staging. Susan G. Komen®. (2024, May 2). <https://www.komen.org/breast-cancer/diagnosis/stages-staging/tumor-size/#:~:text=Tumor%20size%20is%20related%20to,the%20size%20of%20the%20tumor>.
