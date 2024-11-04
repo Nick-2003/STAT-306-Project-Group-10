@@ -60,10 +60,6 @@ cancer_new <- cancer %>%
 cancer_new
 ```
 
-```{r}
-boxplot(tumor_size~tumor_stage, data=cancer)
-```
-
 ### Exploratory data analysis 
 
 -   
@@ -73,7 +69,7 @@ boxplot(tumor_size~tumor_stage, data=cancer)
 -   
 
 ```{r}
-fullmod = lm(overall_survival_months ~ .*.,data=cancer_new_2)
+fullmod = lm(overall_survival_months ~ .*.,data=cancer_new)
 step(fullmod, direction = "both")
 ```
 
