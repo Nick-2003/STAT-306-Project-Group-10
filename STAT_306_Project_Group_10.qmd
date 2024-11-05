@@ -4,7 +4,7 @@ format: pdf
 editor: visual
 ---
 
-# STAT 306 Project 
+# STAT 306 Project
 
 ## Nicholas Tam, Ivy Cheung, Kaichi Nakajima, Kevin Liu (Group 10)
 
@@ -22,10 +22,6 @@ Our analysis will involve the inference of covariates within linear models, and 
 
 -   Variables from columns 32 to 693 consist of genetic attributes containing m-RNA levels z-score for 331 genes, and mutation for 175 genes; they have been omitted due to being difficult to interpret.
 
--   Due to the distribution of “cancer_type_detailed” categories and for ease of computation, we will be filtering the dataset for deceased IDC patients only, as IDC consists of the majority of the dataset, and the “overall_survival” column for living patients would be inconsistent for living patients due to time.
-
--   “tumor_size” has been removed due to already partly contributing to “tumor_stage”. (Susan G. Komen®, 2024)
-
 ## Analysis
 
 ### Loading relevant libraries
@@ -39,30 +35,50 @@ library(fastDummies)
 # install.packages('stringi')
 ```
 
-### Uploading relevant table 
+```{r}
 
--   
+```
+
+### Uploading relevant table and narrowing down to data of interest
+
+-   Due to the distribution of “cancer_type_detailed” categories and for ease of computation, we will be filtering the dataset for deceased IDC patients only, as IDC consists of the majority of the dataset, and the “overall_survival” column for living patients would be inconsistent for living patients due to time.
+
+-   “tumor_size” has been removed due to already partly contributing to “tumor_stage”. (Susan G. Komen®, 2024)
+
+-   All rows with "N/A" or "" as their values for any column have been removed to ensure not data is missing.
 
 ```{r}
 cancer = read.csv("METABRIC_RNA_Mutation.csv", header=TRUE)[,1:31]
-cancer
-summary(cancer)
+cancer_new <- cancer %>% 
+  drop_na(age_at_diagnosis, type_of_breast_surgery, tumor_size, tumor_stage, chemotherapy, hormone_therapy, radio_therapy, overall_survival_months) %>% 
+  filter(!(age_at_diagnosis==""), !(type_of_breast_surgery==""), !(tumor_size==""), !(tumor_stage==""), !(chemotherapy==""), !(hormone_therapy==""), !(radio_therapy==""), !(overall_survival_months==""), cancer_type_detailed == "Breast Invasive Ductal Carcinoma", overall_survival == 1) %>% 
+  select(age_at_diagnosis, type_of_breast_surgery, tumor_stage, chemotherapy, hormone_therapy, radio_therapy, overall_survival_months) 
+cancer_new
+summary(cancer_new)
 ```
 
-### Narrowing down to data of interest 
+### Exploratory data analysis
 
 -   
 
 ```{r}
-cancer_new <- cancer %>% 
-  filter(!is.na(age_at_diagnosis), !is.na(type_of_breast_surgery), !is.na(tumor_size), !is.na(tumor_stage), !is.na(chemotherapy), !is.na(hormone_therapy), !is.na(radio_therapy), !is.na(overall_survival_months), cancer_type_detailed == "Breast Invasive Ductal Carcinoma", overall_survival == 1) %>% 
-  select(age_at_diagnosis, type_of_breast_surgery, tumor_stage, chemotherapy, hormone_therapy, radio_therapy, overall_survival_months) 
-cancer_new
+library(car)
+reg_1 = lm(overall_survival_months~age_at_diagnosis*chemotherapy,data=cancer_new)  # TODO
+summary(reg_1)
+scatterplot(overall_survival_months~age_at_diagnosis*chemotherapy, data=cancer_new, smooth=FALSE)
+
+reg_2 = lm(overall_survival_months~age_at_diagnosis*hormone_therapy,data=cancer_new)  # TODO
+summary(reg_2)
+scatterplot(overall_survival_months~age_at_diagnosis*hormone_therapy, data=cancer_new, smooth=FALSE)
+
+reg_3 = lm(overall_survival_months~age_at_diagnosis*radio_therapy,data=cancer_new)  # TODO
+summary(reg_3)
+scatterplot(overall_survival_months~age_at_diagnosis*radio_therapy, data=cancer_new, smooth=FALSE)
+
+reg_4 = lm(overall_survival_months~age_at_diagnosis*tumor_stage,data=cancer_new)  # TODO
+summary(reg_4)
+scatterplot(overall_survival_months~age_at_diagnosis*tumor_stage, data=cancer_new, smooth=FALSE)
 ```
-
-### Exploratory data analysis 
-
--   
 
 ### Model selection
 
@@ -75,7 +91,7 @@ step(fullmod, direction = "both")
 
 ## Conclusion
 
-## Appendix 
+## Appendix
 
 -   Breast cancer gene expression profiles (METABRIC). Kaggle. (2016, May 10). <https://www.kaggle.com/datasets/raghadalharbi/breast-cancer-gene-expression-profiles-metabric>   
 
