@@ -52,8 +52,10 @@ summary(cancer)
 ```{r}
 cancer_new_2 <- cancer %>% 
   filter(!is.na(age_at_diagnosis), !is.na(type_of_breast_surgery), !is.na(tumor_size), !is.na(tumor_stage), !is.na(chemotherapy), !is.na(hormone_therapy), !is.na(radio_therapy), !is.na(overall_survival_months), cancer_type_detailed == "Breast Invasive Ductal Carcinoma", overall_survival == 1) %>% 
+  transform(type_of_breast_surgery = as.factor(type_of_breast_surgery), tumor_stage = as.factor(tumor_stage), chemotherapy = as.factor(chemotherapy), hormone_therapy = as.factor(hormone_therapy), radio_therapy = as.factor(radio_therapy)) %>% 
   select(age_at_diagnosis, type_of_breast_surgery, tumor_stage, chemotherapy, hormone_therapy, radio_therapy, overall_survival_months) 
 cancer_new_2
+summary(cancer_new_2)
 ```
 
 ```{r}
@@ -83,6 +85,23 @@ cancer_new_2 <- cancer %>%
   filter(!is.na(age_at_diagnosis), !is.na(type_of_breast_surgery), !is.na(tumor_size), !is.na(tumor_stage), !is.na(chemotherapy), !is.na(hormone_therapy), !is.na(radio_therapy), !is.na(overall_survival_months), cancer_type_detailed == "Breast Invasive Ductal Carcinoma", overall_survival == 1) %>% 
   select(age_at_diagnosis, type_of_breast_surgery, tumor_stage, chemotherapy, hormone_therapy, radio_therapy, overall_survival_months) 
 cancer_new_2
+```
+
+```{r}
+options(repr.plot.width = 8, repr.plot.height = 5)
+# Create a scatter plot with a regression line
+ggplot(cancer_new, aes(x = age_at_diagnosis, y = overall_survival_months)) +
+  geom_point() +  # Scatter plot points
+#  geom_smooth(method = "lm", formula = verall_survival_months ~ age_at_diagnosis, se = TRUE, color = "blue", na.rm = TRUE) +  # Regression line with confidence interval
+  geom_smooth(method = "lm", se = TRUE, color = "blue", na.rm = TRUE) +  # Regression line with confidence interval
+  theme(
+    text = element_text(size = 10), 
+    plot.title = element_text(face = "bold"), 
+    axis.title = element_text(face = "bold") 
+  ) +
+  labs(title = "Overall Survival against Age",
+       x = "Age (Years)",
+       y = "Overall Survival (Months)")
 ```
 
 ```{r}

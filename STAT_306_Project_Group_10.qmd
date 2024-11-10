@@ -33,6 +33,7 @@ library(ggplot2)
 # install.packages("fastDummies")
 library(fastDummies)
 # install.packages('stringi')
+library(car)
 ```
 
 ```{r}
@@ -45,14 +46,20 @@ library(fastDummies)
 
 -   “tumor_size” has been removed due to already partly contributing to “tumor_stage”. (Susan G. Komen®, 2024)
 
--   All rows with "N/A" or "" as their values for any column have been removed to ensure not data is missing.
+-   All rows with "N/A" or "" as their values for any column have been removed to ensure no data is missing.
+
+-   All categorical variables are transformed to be treated as categorical by the table.
 
 ```{r}
 cancer = read.csv("METABRIC_RNA_Mutation.csv", header=TRUE)[,1:31]
 cancer_new <- cancer %>% 
   drop_na(age_at_diagnosis, type_of_breast_surgery, tumor_size, tumor_stage, chemotherapy, hormone_therapy, radio_therapy, overall_survival_months) %>% 
-  filter(!(age_at_diagnosis==""), !(type_of_breast_surgery==""), !(tumor_size==""), !(tumor_stage==""), !(chemotherapy==""), !(hormone_therapy==""), !(radio_therapy==""), !(overall_survival_months==""), cancer_type_detailed == "Breast Invasive Ductal Carcinoma", overall_survival == 1) %>% 
+  filter(!(age_at_diagnosis==""), !(type_of_breast_surgery==""), !(tumor_size==""), !(tumor_stage==""), !(chemotherapy==""), !(hormone_therapy==""), !(radio_therapy==""), !(overall_survival_months==""), cancer_type_detailed == "Breast Invasive Ductal Carcinoma", overall_survival == 1, !(tumor_stage==0)) %>% 
+  transform(type_of_breast_surgery = as.factor(type_of_breast_surgery), tumor_stage = as.factor(tumor_stage), chemotherapy = as.factor(chemotherapy), hormone_therapy = as.factor(hormone_therapy), radio_therapy = as.factor(radio_therapy)) %>% 
   select(age_at_diagnosis, type_of_breast_surgery, tumor_stage, chemotherapy, hormone_therapy, radio_therapy, overall_survival_months) 
+
+cancer_new$tumor_stage <- relevel(factor(cancer_new$tumor_stage), ref = "1")
+
 cancer_new
 summary(cancer_new)
 ```
@@ -62,22 +69,58 @@ summary(cancer_new)
 -   
 
 ```{r}
-library(car)
+scatterplot(overall_survival_months~age_at_diagnosis, data=cancer_new, smooth=FALSE, main="Overall Survival against Age", xlab="Age (Years)", ylab="Overall Survival (Months)")
+```
+
+```{r}
+options(repr.plot.width = 8, repr.plot.height = 5)
+# Create a scatter plot with a regression line
+ggplot(cancer_new, aes(x = age_at_diagnosis, y = overall_survival_months)) +
+  geom_point() +  # Scatter plot points
+#  geom_smooth(method = "lm", formula = verall_survival_months ~ age_at_diagnosis, se = TRUE, color = "blue", na.rm = TRUE) +  # Regression line with confidence interval
+  geom_smooth(method = "lm", se = TRUE, color = "blue", na.rm = TRUE) +  # Regression line with confidence interval
+  theme(
+    text = element_text(size = 10), 
+    plot.title = element_text(face = "bold"), 
+    axis.title = element_text(face = "bold") 
+  ) +
+  labs(title = "Overall Survival against Age",
+       x = "Age (Years)",
+       y = "Overall Survival (Months)")
+```
+
+```{r}
+boxplot(overall_survival_months~type_of_breast_surgery, data=cancer_new)
+
+boxplot(overall_survival_months~chemotherapy, data=cancer_new)
+
+boxplot(overall_survival_months~hormone_therapy, data=cancer_new)
+
+boxplot(overall_survival_months~radio_therapy, data=cancer_new)
+
+boxplot(overall_survival_months~tumor_stage, data=cancer_new)
+```
+
+```{r}
+reg_0 = lm(overall_survival_months~age_at_diagnosis*type_of_breast_surgery,data=cancer_new)  # TODO
+summary(reg_0)
+scatterplot(overall_survival_months~age_at_diagnosis*type_of_breast_surgery, data=cancer_new, smooth=FALSE, main="Overall Survival against Age and Breast Surgery", xlab="Age (Years)", ylab="Overall Survival (Months)")
+
 reg_1 = lm(overall_survival_months~age_at_diagnosis*chemotherapy,data=cancer_new)  # TODO
 summary(reg_1)
-scatterplot(overall_survival_months~age_at_diagnosis*chemotherapy, data=cancer_new, smooth=FALSE)
+scatterplot(overall_survival_months~age_at_diagnosis*chemotherapy, data=cancer_new, smooth=FALSE, main="Overall Survival against Age and Chemotherapy", xlab="Age (Years)", ylab="Overall Survival (Months)")
 
 reg_2 = lm(overall_survival_months~age_at_diagnosis*hormone_therapy,data=cancer_new)  # TODO
 summary(reg_2)
-scatterplot(overall_survival_months~age_at_diagnosis*hormone_therapy, data=cancer_new, smooth=FALSE)
+scatterplot(overall_survival_months~age_at_diagnosis*hormone_therapy, data=cancer_new, smooth=FALSE, main="Overall Survival against Age and Hormone Therapy", xlab="Age (Years)", ylab="Overall Survival (Months)")
 
 reg_3 = lm(overall_survival_months~age_at_diagnosis*radio_therapy,data=cancer_new)  # TODO
 summary(reg_3)
-scatterplot(overall_survival_months~age_at_diagnosis*radio_therapy, data=cancer_new, smooth=FALSE)
+scatterplot(overall_survival_months~age_at_diagnosis*radio_therapy, data=cancer_new, smooth=FALSE, main="Overall Survival against Age and Radio Therapy", xlab="Age (Years)", ylab="Overall Survival (Months)")
 
 reg_4 = lm(overall_survival_months~age_at_diagnosis*tumor_stage,data=cancer_new)  # TODO
 summary(reg_4)
-scatterplot(overall_survival_months~age_at_diagnosis*tumor_stage, data=cancer_new, smooth=FALSE)
+scatterplot(overall_survival_months~age_at_diagnosis*tumor_stage, data=cancer_new, smooth=FALSE, main="Overall Survival against Age and Tumor Stage", xlab="Age (Years)", ylab="Overall Survival (Months)")
 ```
 
 ### Model selection
@@ -86,7 +129,24 @@ scatterplot(overall_survival_months~age_at_diagnosis*tumor_stage, data=cancer_ne
 
 ```{r}
 fullmod = lm(overall_survival_months ~ .*.,data=cancer_new)
-step(fullmod, direction = "both")
+finalmod = step(fullmod, direction = "both")
+```
+
+```{r}
+summary(finalmod)
+```
+
+```{r}
+# Create the residual plot
+# TODO
+plot(finalmod$fitted.values, finalmod$residuals, xlab="Fitted Values", ylab="Residuals")
+abline(a = 0, b = 0)
+lines(lowess(finalmod$fitted.values, finalmod$residuals), col = "blue", lwd = 2)
+```
+
+```{r}
+qqnorm(finalmod$residuals)
+qqline(finalmod$residuals)
 ```
 
 ## Conclusion
