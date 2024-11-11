@@ -81,7 +81,7 @@ options(repr.plot.width = 8, repr.plot.height = 5)
 # Create a scatter plot with a regression line
 ggplot(cancer_new, aes(x = age_at_diagnosis, y = overall_survival_months)) +
   geom_point() +  # Scatter plot points
-#  geom_smooth(method = "lm", formula = verall_survival_months ~ age_at_diagnosis, se = TRUE, color = "blue", na.rm = TRUE) +  # Regression line with confidence interval
+#  geom_smooth(method = "lm", formula = overall_survival_months ~ age_at_diagnosis, se = TRUE, color = "blue", na.rm = TRUE) +  # Regression line with confidence interval
   geom_smooth(method = "lm", se = TRUE, color = "blue", na.rm = TRUE) +  # Regression line with confidence interval
   theme(
     text = element_text(size = 10), 

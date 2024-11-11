@@ -94,7 +94,7 @@ summary(cancer_new)
 ```
 
 ```{r}
-boxplot(overall_survival_months~cancer_type_IDC, data=cancer_new)
+boxplot(overall_survival_months~cancer_type_detailed, data=cancer_new, las = 2)
 ```
 
 ### Exploratory data analysis
