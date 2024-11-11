@@ -76,7 +76,7 @@ summary(cancer)
 ```{r}
 cancer_new <- cancer %>% 
   drop_na(age_at_diagnosis, type_of_breast_surgery, tumor_size, tumor_stage, chemotherapy, hormone_therapy, radio_therapy, overall_survival_months) %>% 
-  filter(!(age_at_diagnosis==""), !(type_of_breast_surgery==""), !(tumor_size==""), !(tumor_stage==""), !(chemotherapy==""), !(hormone_therapy==""), !(radio_therapy==""), !(overall_survival_months==""), !(cancer_type_detailed==""), overall_survival == 1, !(tumor_stage==0)) %>% 
+  filter(!(age_at_diagnosis==""), !(type_of_breast_surgery==""), !(tumor_size==""), !(tumor_stage==""), !(chemotherapy==""), !(hormone_therapy==""), !(radio_therapy==""), !(overall_survival_months==""), !(cancer_type_detailed=="")) %>% 
   transform(
     type_of_breast_surgery = as.factor(type_of_breast_surgery), 
     tumor_stage = as.factor(tumor_stage), 
@@ -85,7 +85,7 @@ cancer_new <- cancer %>%
     radio_therapy = as.factor(radio_therapy)
     ) %>% 
   select(age_at_diagnosis, type_of_breast_surgery, cancer_type_detailed, tumor_stage, chemotherapy, hormone_therapy, radio_therapy, overall_survival_months) 
-
+# , !(tumor_stage==0)
 cancer_new$tumor_stage <- relevel(factor(cancer_new$tumor_stage), ref = "1")
 cancer_new$cancer_type_IDC <- (cancer_new$cancer_type_detailed == "Breast Invasive Ductal Carcinoma") 
 
@@ -94,6 +94,7 @@ summary(cancer_new)
 ```
 
 ```{r}
+boxplot(overall_survival_months~cancer_type_detailed, data=cancer_new, las = 2)
 boxplot(overall_survival_months~cancer_type_detailed, data=cancer_new, las = 2)
 ```
 
@@ -131,7 +132,7 @@ options(repr.plot.width = 8, repr.plot.height = 5)
 # Create a scatter plot with a regression line
 ggplot(cancer_new, aes(x = age_at_diagnosis, y = overall_survival_months)) +
   geom_point() +  # Scatter plot points
-#  geom_smooth(method = "lm", formula = verall_survival_months ~ age_at_diagnosis, se = TRUE, color = "blue", na.rm = TRUE) +  # Regression line with confidence interval
+#  geom_smooth(method = "lm", formula = overall_survival_months ~ age_at_diagnosis, se = TRUE, color = "blue", na.rm = TRUE) +  # Regression line with confidence interval
   geom_smooth(method = "lm", se = TRUE, color = "blue", na.rm = TRUE) +  # Regression line with confidence interval
   theme(
     text = element_text(size = 10), 
@@ -146,4 +147,12 @@ ggplot(cancer_new, aes(x = age_at_diagnosis, y = overall_survival_months)) +
 ```{r}
 fullmod = lm(overall_survival_months ~ .*.,data=cancer_new_2)
 step(fullmod, direction = "both")
+```
+
+```{r}
+cancer_new$chem_hor <- (cancer_new$chemotherapy == "1") & (cancer_new$hormone_therapy == "1")
+cancer_new$chem_rad <- (cancer_new$chemotherapy == "1") & (cancer_new$radio_therapy == "1")
+cancer_new$hor_rad <- (cancer_new$hormone_therapy == "1") & (cancer_new$radio_therapy == "1")
+cancer_new$all <- (cancer_new$chemotherapy == "1") & (cancer_new$hormone_therapy == "1") & (cancer_new$radio_therapy == "1")
+summary(cancer_new)
 ```
