@@ -2,6 +2,8 @@
 title: "STAT_306_Project_Group_10"
 format: pdf
 editor: visual
+execute:
+  echo: false # Hide code in document
 ---
 
 # STAT 306 Project
@@ -36,10 +38,6 @@ library(fastDummies)
 library(car)
 ```
 
-```{r}
-
-```
-
 ### Uploading relevant table and narrowing down to data of interest
 
 -   Due to the distribution of “cancer_type_detailed” categories and for ease of computation, we will be filtering the dataset for deceased IDC patients only, as IDC consists of the majority of the dataset, and the “overall_survival” column for living patients would be inconsistent for living patients due to time.
@@ -60,7 +58,7 @@ cancer_new <- cancer %>%
 
 cancer_new$tumor_stage <- relevel(factor(cancer_new$tumor_stage), ref = "1")
 
-cancer_new
+head(cancer_new, 10)
 summary(cancer_new)
 ```
 
@@ -129,7 +127,8 @@ scatterplot(overall_survival_months~age_at_diagnosis*tumor_stage, data=cancer_ne
 
 ```{r}
 fullmod = lm(overall_survival_months ~ .*.,data=cancer_new)
-finalmod = step(fullmod, direction = "both")
+# finalmod = step(fullmod, direction = "both", trace = 1)
+finalmod = step(fullmod, direction = "both", trace = 0)
 ```
 
 ```{r}
