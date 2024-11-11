@@ -42,7 +42,31 @@ library(fastDummies)
 -   
 
 ```{r}
-cancer = read.csv("METABRIC_RNA_Mutation.csv", header=TRUE)[,1:31]
+cancer <- read.csv("METABRIC_RNA_Mutation.csv", header=TRUE)[,1:31]  %>% 
+  transform(type_of_breast_surgery = as.factor(type_of_breast_surgery), 
+            cancer_type = as.factor(cancer_type), 
+            cancer_type_detailed = as.factor(cancer_type_detailed), 
+            pam50_._claudin.low_subtype = as.factor(pam50_._claudin.low_subtype), 
+            cohort = as.factor(cohort), 
+            er_status_measured_by_ihc = as.factor(er_status_measured_by_ihc), 
+            er_status = as.factor(er_status), 
+            neoplasm_histologic_grade = as.factor(neoplasm_histologic_grade), 
+            her2_status_measured_by_snp6 = as.factor(her2_status_measured_by_snp6), 
+            her2_status = as.factor(her2_status), 
+            tumor_other_histologic_subtype = as.factor(tumor_other_histologic_subtype), 
+            inferred_menopausal_state = as.factor(inferred_menopausal_state), 
+            integrative_cluster = as.factor(integrative_cluster), 
+            primary_tumor_laterality = as.factor(primary_tumor_laterality), 
+            oncotree_code = as.factor(oncotree_code), 
+            overall_survival = as.factor(overall_survival), 
+            pr_status = as.factor(pr_status), 
+#            "3-gene_classifier_subtype" = as.factor(3-gene_classifier_subtype), 
+            death_from_cancer = as.factor(death_from_cancer), 
+            tumor_stage = as.factor(tumor_stage), 
+            chemotherapy = as.factor(chemotherapy),
+            hormone_therapy = as.factor(hormone_therapy), 
+            radio_therapy = as.factor(radio_therapy)
+            ) 
 cancer
 summary(cancer)
 ```
@@ -50,19 +74,34 @@ summary(cancer)
 ### Narrowing down to data of interest
 
 ```{r}
-cancer_new_2 <- cancer %>% 
-  filter(!is.na(age_at_diagnosis), !is.na(type_of_breast_surgery), !is.na(tumor_size), !is.na(tumor_stage), !is.na(chemotherapy), !is.na(hormone_therapy), !is.na(radio_therapy), !is.na(overall_survival_months), cancer_type_detailed == "Breast Invasive Ductal Carcinoma", overall_survival == 1) %>% 
-  transform(type_of_breast_surgery = as.factor(type_of_breast_surgery), tumor_stage = as.factor(tumor_stage), chemotherapy = as.factor(chemotherapy), hormone_therapy = as.factor(hormone_therapy), radio_therapy = as.factor(radio_therapy)) %>% 
-  select(age_at_diagnosis, type_of_breast_surgery, tumor_stage, chemotherapy, hormone_therapy, radio_therapy, overall_survival_months) 
-cancer_new_2
-summary(cancer_new_2)
+cancer_new <- cancer %>% 
+  drop_na(age_at_diagnosis, type_of_breast_surgery, tumor_size, tumor_stage, chemotherapy, hormone_therapy, radio_therapy, overall_survival_months) %>% 
+  filter(!(age_at_diagnosis==""), !(type_of_breast_surgery==""), !(tumor_size==""), !(tumor_stage==""), !(chemotherapy==""), !(hormone_therapy==""), !(radio_therapy==""), !(overall_survival_months==""), !(cancer_type_detailed==""), overall_survival == 1, !(tumor_stage==0)) %>% 
+  transform(
+    type_of_breast_surgery = as.factor(type_of_breast_surgery), 
+    tumor_stage = as.factor(tumor_stage), 
+    chemotherapy = as.factor(chemotherapy), 
+    hormone_therapy = as.factor(hormone_therapy), 
+    radio_therapy = as.factor(radio_therapy)
+    ) %>% 
+  select(age_at_diagnosis, type_of_breast_surgery, cancer_type_detailed, tumor_stage, chemotherapy, hormone_therapy, radio_therapy, overall_survival_months) 
+
+cancer_new$tumor_stage <- relevel(factor(cancer_new$tumor_stage), ref = "1")
+cancer_new$cancer_type_IDC <- (cancer_new$cancer_type_detailed == "Breast Invasive Ductal Carcinoma") 
+
+head(cancer_new, 10)
+summary(cancer_new)
 ```
 
 ```{r}
-boxplot(tumor_size~tumor_stage, data=cancer)
+boxplot(overall_survival_months~cancer_type_IDC, data=cancer_new)
 ```
 
 ### Exploratory data analysis
+
+```{r}
+boxplot(overall_survival_months~type_of_breast_surgery, data=cancer_new)
+```
 
 ```{r}
 unique(cancer$pam50_._claudin.low_subtype)

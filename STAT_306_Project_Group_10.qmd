@@ -53,7 +53,13 @@ cancer = read.csv("METABRIC_RNA_Mutation.csv", header=TRUE)[,1:31]
 cancer_new <- cancer %>% 
   drop_na(age_at_diagnosis, type_of_breast_surgery, tumor_size, tumor_stage, chemotherapy, hormone_therapy, radio_therapy, overall_survival_months) %>% 
   filter(!(age_at_diagnosis==""), !(type_of_breast_surgery==""), !(tumor_size==""), !(tumor_stage==""), !(chemotherapy==""), !(hormone_therapy==""), !(radio_therapy==""), !(overall_survival_months==""), cancer_type_detailed == "Breast Invasive Ductal Carcinoma", overall_survival == 1, !(tumor_stage==0)) %>% 
-  transform(type_of_breast_surgery = as.factor(type_of_breast_surgery), tumor_stage = as.factor(tumor_stage), chemotherapy = as.factor(chemotherapy), hormone_therapy = as.factor(hormone_therapy), radio_therapy = as.factor(radio_therapy)) %>% 
+  transform(
+    type_of_breast_surgery = as.factor(type_of_breast_surgery), 
+    tumor_stage = as.factor(tumor_stage), 
+    chemotherapy = as.factor(chemotherapy), 
+    hormone_therapy = as.factor(hormone_therapy), 
+    radio_therapy = as.factor(radio_therapy)
+    ) %>% 
   select(age_at_diagnosis, type_of_breast_surgery, tumor_stage, chemotherapy, hormone_therapy, radio_therapy, overall_survival_months) 
 
 cancer_new$tumor_stage <- relevel(factor(cancer_new$tumor_stage), ref = "1")
