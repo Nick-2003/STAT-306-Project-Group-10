@@ -299,9 +299,15 @@ plot_age_death <- ggplot(cancer_new, aes(x = age_at_diagnosis, y = overall_survi
 # grid.arrange(plot_age_chemo, plot_age_hormo, plot_age_radio)
 # grid.arrange(plot_age_type, plot_age_tumor, plot_age_death)
 
-grid.arrange(plot_age_chemo, plot_age_hormo, nrow = 1)
-grid.arrange(plot_age_radio, plot_age_type, nrow = 1)
-grid.arrange(plot_age_tumor, plot_age_death, nrow = 1)
+# grid.arrange(plot_age_chemo, plot_age_hormo, nrow = 1)
+# grid.arrange(plot_age_radio, plot_age_type, nrow = 1)
+# grid.arrange(plot_age_tumor, plot_age_death, nrow = 1)
+plot_age_chemo
+plot_age_hormo
+plot_age_radio
+plot_age_type
+plot_age_tumor
+plot_age_death
 ```
 
 ### Model selection
