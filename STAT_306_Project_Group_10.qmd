@@ -335,6 +335,106 @@ grid.arrange(plot_age_tumor, plot_age_death, ncol = 1)
 # plot_age_death
 ```
 
+#### Histograms of survival against interactions between age and categorical variables 
+
+```{r}
+histo_age_type <- ggplot(cancer_new, aes(x = overall_survival_months, y = after_stat(density), fill = type_of_breast_surgery)) + 
+    geom_histogram(alpha=0.5, position="identity", binwidth = 5,) +
+    # facet_wrap(~location, scales = "fixed", nrow = 5) +
+    theme(
+      text = element_text(size = 7), 
+      plot.title = element_text(face = "bold"), 
+      axis.title = element_text(face = "bold") 
+    ) +
+    labs(title = "Overall Survival against Age and Breast Surgery",
+         x = "Overall Survival (Months)",
+       y = "Density",
+         color = "Breast Surgery")
+
+histo_age_chemo <- ggplot(cancer_new, aes(x = overall_survival_months, y = after_stat(density), fill = chemotherapy)) + 
+    geom_histogram(alpha=0.5, position="identity", binwidth = 5,) +
+    # facet_wrap(~location, scales = "fixed", nrow = 5) +
+    theme(
+      text = element_text(size = 7), 
+      plot.title = element_text(face = "bold"), 
+      axis.title = element_text(face = "bold") 
+    ) +
+    labs(title = "Overall Survival against Age and Chemotherapy",
+       x = "Overall Survival (Months)",
+       y = "Density",
+       color = "Chemotherapy")
+
+histo_age_hormo <- ggplot(cancer_new, aes(x = overall_survival_months, y = after_stat(density), fill = hormone_therapy)) + 
+    geom_histogram(alpha=0.5, position="identity", binwidth = 5,) +
+    # facet_wrap(~location, scales = "fixed", nrow = 5) +
+    theme(
+      text = element_text(size = 7), 
+      plot.title = element_text(face = "bold"), 
+      axis.title = element_text(face = "bold") 
+    ) +
+    labs(title = "Overall Survival against Age and Hormone Therapy",
+       x = "Overall Survival (Months)",
+       y = "Density",
+       color = "Hormone Therapy")
+
+histo_age_radio <- ggplot(cancer_new, aes(x = overall_survival_months, y = after_stat(density), fill = radio_therapy)) + 
+    geom_histogram(alpha=0.5, position="identity", binwidth = 5,) +
+    # facet_wrap(~location, scales = "fixed", nrow = 5) +
+    theme(
+      text = element_text(size = 7), 
+      plot.title = element_text(face = "bold"), 
+      axis.title = element_text(face = "bold") 
+    ) +
+    labs(title = "Overall Survival against Age and Radio Therapy",
+       x = "Overall Survival (Months)",
+       y = "Density",
+       color = "Radio Therapy")
+
+histo_age_tumor <- ggplot(cancer_new, aes(x = overall_survival_months, y = after_stat(density), fill = tumor_stage)) + 
+    geom_histogram(alpha=0.5, position="identity", binwidth = 5,) +
+    # facet_wrap(~location, scales = "fixed", nrow = 5) +
+    theme(
+      text = element_text(size = 7), 
+      plot.title = element_text(face = "bold"), 
+      axis.title = element_text(face = "bold") 
+    ) +
+    labs(title = "Overall Survival against Age and Tumor Stage",
+       x = "Overall Survival (Months)",
+       y = "Density",
+       color = "Tumor Stage")
+
+histo_age_death <- ggplot(cancer_new, aes(x = overall_survival_months, y = after_stat(density), fill = death_from_cancer)) + 
+    geom_histogram(alpha=0.5, position="identity", binwidth = 5,) +
+    # facet_wrap(~location, scales = "fixed", nrow = 5) +
+    theme(
+      text = element_text(size = 7), 
+      plot.title = element_text(face = "bold"), 
+      axis.title = element_text(face = "bold") 
+    ) +
+    labs(title = "Overall Survival against Age and Living Condition",
+       x = "Overall Survival (Months)",
+       y = "Density", 
+       color = "Living Condition")
+
+# grid.arrange(histo_age_chemo, histo_age_hormo, histo_age_radio)
+# grid.arrange(histo_age_type, histo_age_tumor, histo_age_death)
+
+# grid.arrange(histo_age_chemo, histo_age_hormo, nrow = 1)
+# grid.arrange(histo_age_radio, histo_age_type, nrow = 1)
+# grid.arrange(histo_age_tumor, histo_age_death, nrow = 1)
+
+grid.arrange(histo_age_chemo, histo_age_hormo, ncol = 1)
+grid.arrange(histo_age_radio, histo_age_type, ncol = 1)
+grid.arrange(histo_age_tumor, histo_age_death, ncol = 1)
+
+# histo_age_chemo
+# histo_age_hormo
+# histo_age_radio
+# histo_age_type
+# histo_age_tumor
+# histo_age_death
+```
+
 ### Model selection
 
 -   The interaction terms for all therapies
