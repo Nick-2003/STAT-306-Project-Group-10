@@ -12,15 +12,15 @@ execute:
 
 ## Introduction
 
-Breast invasive ductal carcinoma (IDC) is the most common type of breast cancer, with about 80% of all forms of breast cancer being IDC, according to the American Cancer Society (DePolo, 2024). There are numerous nonsurgical treatments of IDC, such as radiotherapy, chemotherapy, and hormone therapy (Wright, 2023), but it is unclear how combinations of treatments can interact in a model to predict a patient’s survival until death.
+Breast invasive ductal carcinoma (IDC) is the most common type of breast cancer, with about 80% of all forms of breast cancer being IDC, according to the American Cancer Society (DePolo, 2024). There are numerous nonsurgical treatments of IDC, such as radiotherapy, chemotherapy, and hormone therapy (Wright, 2023), and each their effectiveness is partly determined by the patient's condition, such as age and tumor stage. For instance, due to interactions between other treatments or conditions as a consequence of aging (e.g. Diabetes, liver disease, metabolism), more optimal doses of chemotherapy generally being discouraged for older patients due to potentially toxic side effects, implying a smaller difference in survival between older patients with or without chemotherapy (Given, Given, 2008). However, it is unclear how combinations of treatments can interact in a model to predict a patient’s survival until death.
 
 For our research project, we have selected a dataset of approximately 1900 primary breast cancer samples, obtained from the Molecular Taxonomy of Breast Cancer International Consortium (METABRIC) database through cBioPortal for Cancer Genomics.
 
 Our project question is:
 
-**"How do radiotherapy, chemotherapy, and hormone therapy influence the length of time a patient with IDC will survive until death, given control variables age, surgery type, and tumor stage?"**
+**"How do radiotherapy, chemotherapy, and hormone therapy influence the length of time a patient with IDC will survive, given control variables age, surgery type, tumor stage, and their present survival status?"**
 
-Our analysis will involve the inference of covariates within linear models, and thus \_\_\_
+Our analysis will involve the inference of covariates within linear models, as we seek to determine the interaction of cancer therapies on allowing patients to survive longer.
 
 -   Variables from columns 32 to 693 consist of genetic attributes containing m-RNA levels z-score for 331 genes, and mutation for 175 genes; they have been omitted due to being difficult to interpret.
 
@@ -337,6 +337,8 @@ grid.arrange(plot_age_tumor, plot_age_death, ncol = 1)
 
 #### Histograms of survival against interactions between age and categorical variables 
 
+-   
+
 ```{r}
 histo_age_type <- ggplot(cancer_new, aes(x = overall_survival_months, y = after_stat(density), fill = type_of_breast_surgery)) + 
     geom_histogram(alpha=0.5, position="identity", binwidth = 5,) +
@@ -437,14 +439,17 @@ grid.arrange(histo_age_tumor, histo_age_death, ncol = 1)
 
 ### Model selection
 
--   The interaction terms for all therapies
+-   As our goal is to determine how the various forms of therapy influence a patient's survival until death, interaction terms regarding all combinations of therapies will be considered, since it is unclear if the effect of one therapy will influence the effect of another (e.g. Chemotherapy and hormone therapy in similar timeframe).
+-    Interaction terms for age and each type of therapy are included, as prior studies have indicated varying degrees of influence between age and treatment method (Given, Given 2008; Cleveland Clinic, 2024; U.S. National Library of Medicine; Steinfeld, Diamond, Hanks, Coia, Kramer, 1989).
+-   \[Insert something involving interaction between tumor and therapy\]
+-   Due to not being significant parts of the question of interest and the indeterminate interaction between them and the therapies, interaction terms for `type_of_breast_surgery` and `death_from_cancer` are ignored for the full model.
 
 ```{r}
 # fullmod = lm(overall_survival_months ~ .*.,data=cancer_new)
-fullformula = overall_survival_months ~ age_at_diagnosis + chemotherapy * hormone_therapy * radio_therapy + age_at_diagnosis : chemotherapy + age_at_diagnosis : hormone_therapy + age_at_diagnosis : radio_therapy + tumor_stage + tumor_stage : chemotherapy + tumor_stage : hormone_therapy + tumor_stage : radio_therapy + type_of_breast_surgery + death_from_cancer
+fullformula = overall_survival_months ~ age_at_diagnosis + chemotherapy * hormone_therapy * radio_therapy + age_at_diagnosis : chemotherapy + age_at_diagnosis : hormone_therapy + age_at_diagnosis : radio_therapy + tumor_stage + tumor_stage : chemotherapy + tumor_stage : hormone_therapy + tumor_stage : radio_therapy + type_of_breast_surgery + death_from_cancer 
 
 fullmod = lm(fullformula, data=cancer_new)
-# finalmod = step(fullmod, direction = "both", trace = 1)
+# finalmod_both = step(fullmod, direction = "both", trace = 1)
 finalmod_both = step(fullmod, direction = "both", trace = 0)
 summary(finalmod_both)
 ```
@@ -455,7 +460,8 @@ summary(finalmod_backward)
 ```
 
 ```{r}
-finalmod_forward = step(fullmod, direction = "forward", trace = 0)
+nullmod = lm(overall_survival_months ~ 1, data = cancer_new)
+finalmod_forward = step(nullmod, scope = list(lower = nullmod, upper = fullmod), direction = "forward", trace = 0)
 summary(finalmod_back)
 ```
 
@@ -519,12 +525,20 @@ qqline(finalmod_both$residuals)
 
 ## Appendix
 
--   Breast cancer gene expression profiles (METABRIC). Kaggle. (2016, May 10). <https://www.kaggle.com/datasets/raghadalharbi/breast-cancer-gene-expression-profiles-metabric>   
+-   Breast cancer gene expression profiles (METABRIC). Kaggle. (2016, May 10). <https://www.kaggle.com/datasets/raghadalharbi/breast-cancer-gene-expression-profiles-metabric>
 
--   CBioPortal for Cancer Genomics. (n.d.). <https://www.cbioportal.org/study/summary?id=brca_metabric>
+-   CBioPortal for Cancer Genomics. (n.d.). [https://www.cbioportal.org/study/summary?id=brca_metabric](#0)
 
--   DePolo, J. (2024, October 2). Invasive ductal carcinoma (IDC). Breastcancer.org - Breast Cancer Information and Support. <https://www.breastcancer.org/types/invasive-ductal-carcinoma>  
+-   DePolo, J. (2024, October 2). Invasive ductal carcinoma (IDC). Breastcancer.org - Breast Cancer Information and Support. <https://www.breastcancer.org/types/invasive-ductal-carcinoma>
 
 -   Wright , P. (2023, March 21). Invasive ductal carcinoma (IDC). Johns Hopkins Medicine. <https://www.hopkinsmedicine.org/health/conditions-and-diseases/breast-cancer/invasive-ductal-carcinoma-idc#:~:text=Radiation%20therapy%20might%20be%20part,lymph%20nodes%2C%E2%80%9D%20Wright%20says>. 
 
--   Tumor size and staging. Susan G. Komen®. (2024, May 2). <https://www.komen.org/breast-cancer/diagnosis/stages-staging/tumor-size/#:~:text=Tumor%20size%20is%20related%20to,the%20size%20of%20the%20tumor>.
+-   Tumor size and staging. Susan G. Komen®. (2024, May 2). <https://www.komen.org/breast-cancer/diagnosis/stages-staging/tumor-size/#:~:text=Tumor%20size%20is%20related%20to,the%20size%20of%20the%20tumor>. 
+
+-   Given, B., & Given, C. W. (2008, December 15). Older adults and cancer treatment. Cancer. <https://pmc.ncbi.nlm.nih.gov/articles/PMC2606910/#S10>
+
+-   Hormone therapy for cancer. Cleveland Clinic. (2024, May 1).[ https://my.clevelandclinic.org/health/treatments/17108-hormone-therapy-to-treat-cancer](https://my.clevelandclinic.org/health/treatments/17108-hormone-therapy-to-treat-cancer) 
+
+-   U.S. National Library of Medicine. (n.d.). Aging changes in hormone production: Medlineplus medical encyclopedia. MedlinePlus.[ https://medlineplus.gov/ency/article/004000.htm#:\~:text=In%20women%2C%20estrogen%20and%20prolactin,Cortisol](https://medlineplus.gov/ency/article/004000.htm#:~:text=In%20women%2C%20estrogen%20and%20prolactin,Cortisol) 
+
+-   Steinfeld, A. D., Diamond, J. J., Hanks, G. E., Coia, L. R., & Kramer, S. (1989). Patient age as a factor in radiotherapy. Data from the patterns of care study. Journal of the American Geriatrics Society, 37(4), 335–338.[ https://doi.org/10.1111/j.1532-5415.1989.tb05501.x](https://doi.org/10.1111/j.1532-5415.1989.tb05501.x)
