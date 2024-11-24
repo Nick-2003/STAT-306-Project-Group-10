@@ -50,7 +50,7 @@ library(gridExtra) # Extensions for grid system
 
 -   All categorical variables are transformed to be treated as categorical by the table.
 
--   After initial "tumor_stage==0" and "tumor_stage==4" have been removed due to lack of sufficient amounts of data points.
+-   After initial analysis, "tumor_stage==0" and "tumor_stage==4" have been removed due to lack of sufficient amounts of data points.
 
 ```{r}
 cancer = read.csv("METABRIC_RNA_Mutation.csv", header=TRUE)[,1:31]
@@ -215,7 +215,7 @@ grid.arrange(box_age_radio, box_age_type, nrow = 1)
 grid.arrange(box_age_tumor, box_age_death, nrow = 1)
 ```
 
-#### Scatterplots of survival against interactions between age and categorical variables 
+#### Scatterplots of survival against interactions between age and categorical variables
 
 -   
 
@@ -335,7 +335,7 @@ grid.arrange(plot_age_tumor, plot_age_death, ncol = 1)
 # plot_age_death
 ```
 
-#### Histograms of survival against interactions between age and categorical variables 
+#### Histograms of survival against interactions between age and categorical variables
 
 -   
 
@@ -440,7 +440,7 @@ grid.arrange(histo_age_tumor, histo_age_death, ncol = 1)
 ### Model selection
 
 -   As our goal is to determine how the various forms of therapy influence a patient's survival until death, interaction terms regarding all combinations of therapies will be considered, since it is unclear if the effect of one therapy will influence the effect of another (e.g. Chemotherapy and hormone therapy in similar timeframe).
--    Interaction terms for age and each type of therapy are included, as prior studies have indicated varying degrees of influence between age and treatment method (Given, Given 2008; Cleveland Clinic, 2024; U.S. National Library of Medicine; Steinfeld, Diamond, Hanks, Coia, Kramer, 1989).
+-   Interaction terms for age and each type of therapy are included, as prior studies have indicated varying degrees of influence between age and treatment method (Given, Given 2008; Cleveland Clinic, 2024; U.S. National Library of Medicine; Steinfeld, Diamond, Hanks, Coia, Kramer, 1989).
 -   \[Insert something involving interaction between tumor and therapy\]
 -   Due to not being significant parts of the question of interest and the indeterminate interaction between them and the therapies, interaction terms for `type_of_breast_surgery` and `death_from_cancer` are ignored for the full model.
 
@@ -537,8 +537,8 @@ qqline(finalmod_both$residuals)
 
 -   Given, B., & Given, C. W. (2008, December 15). Older adults and cancer treatment. Cancer. <https://pmc.ncbi.nlm.nih.gov/articles/PMC2606910/#S10>
 
--   Hormone therapy for cancer. Cleveland Clinic. (2024, May 1).[ https://my.clevelandclinic.org/health/treatments/17108-hormone-therapy-to-treat-cancer](https://my.clevelandclinic.org/health/treatments/17108-hormone-therapy-to-treat-cancer) 
+-   Hormone therapy for cancer. Cleveland Clinic. (2024, May 1).<https://my.clevelandclinic.org/health/treatments/17108-hormone-therapy-to-treat-cancer> 
 
--   U.S. National Library of Medicine. (n.d.). Aging changes in hormone production: Medlineplus medical encyclopedia. MedlinePlus.[ https://medlineplus.gov/ency/article/004000.htm#:\~:text=In%20women%2C%20estrogen%20and%20prolactin,Cortisol](https://medlineplus.gov/ency/article/004000.htm#:~:text=In%20women%2C%20estrogen%20and%20prolactin,Cortisol) 
+-   U.S. National Library of Medicine. (n.d.). Aging changes in hormone production: Medlineplus medical encyclopedia. MedlinePlus.<https://medlineplus.gov/ency/article/004000.htm#:~:text=In%20women%2C%20estrogen%20and%20prolactin,Cortisol> 
 
--   Steinfeld, A. D., Diamond, J. J., Hanks, G. E., Coia, L. R., & Kramer, S. (1989). Patient age as a factor in radiotherapy. Data from the patterns of care study. Journal of the American Geriatrics Society, 37(4), 335–338.[ https://doi.org/10.1111/j.1532-5415.1989.tb05501.x](https://doi.org/10.1111/j.1532-5415.1989.tb05501.x)
+-   Steinfeld, A. D., Diamond, J. J., Hanks, G. E., Coia, L. R., & Kramer, S. (1989). Patient age as a factor in radiotherapy. Data from the patterns of care study. Journal of the American Geriatrics Society, 37(4), 335–338.<https://doi.org/10.1111/j.1532-5415.1989.tb05501.x>
