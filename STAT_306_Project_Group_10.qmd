@@ -99,7 +99,17 @@ qqline(reg_start$residuals)
 
 #### Boxplots
 
--   
+-   overall_survival_months for those that took chemotherapy is generally lower than for those without in terms of mean and median, and the range of overall_survival_months is smaller.
+
+-   Mean and median overall_survival_months for those that took hormone therapy are lower than those without, while the interquartile range for patients with hormone therapy is smaller than for those without.
+
+-   Boxplots for overall_survival_months against each radio therapy class are extremely similar, including the mean and median values.
+
+-   overall_survival_months for those with mastectomy is lower than for those with breast conserving surgery in terms of mean and median, and the values are more skewed toward lower values.
+
+-   Increasing levels of tumor stages provide decreasing mean, median and percentile values.
+
+-   Those that died from disease have significantly lower overall_survival_months values than all other categories and the most extreme outliers, while those that died from other causes have a lower mean and median overall_survival_months than those that lived.
 
 ```{r}
 box_age_type <- cancer_new %>%
@@ -113,7 +123,7 @@ box_age_type <- cancer_new %>%
     ) +
     ggtitle("Age Comparison") +
     labs(title = "Overall Survival for each Breast Surgery",
-       x = "Age (Years)",
+       x = "Breast Surgery",
        y = "Overall Survival (Months)", 
        color = "Breast Surgery") + 
     stat_summary(aes(type_of_breast_surgery, overall_survival_months, fill = type_of_breast_surgery),
@@ -131,7 +141,7 @@ box_age_chemo <- cancer_new %>%
     ) +
     ggtitle("Age Comparison") +
     labs(title = "Overall Survival for Chemotherapy",
-       x = "Age (Years)",
+       x = "Chemotherapy",
        y = "Overall Survival (Months)", 
        color = "Chemotherapy") + 
     stat_summary(aes(chemotherapy, overall_survival_months, fill = chemotherapy),
@@ -149,7 +159,7 @@ box_age_hormo <- cancer_new %>%
     ) +
     ggtitle("Age Comparison") +
     labs(title = "Overall Survival for Hormone Therapy",
-       x = "Age (Years)",
+       x = "Hormone Therapy",
        y = "Overall Survival (Months)", 
        color = "Hormone Therapy") + 
     stat_summary(aes(hormone_therapy, overall_survival_months, fill = hormone_therapy),
@@ -167,7 +177,7 @@ box_age_radio <- cancer_new %>%
     ) +
     ggtitle("Age Comparison") +
     labs(title = "Overall Survival for Radio Therapy",
-       x = "Age (Years)",
+       x = "Radio Therapy",
        y = "Overall Survival (Months)", 
        color = "Radio Therapy") + 
     stat_summary(aes(radio_therapy, overall_survival_months, fill = radio_therapy),
@@ -185,7 +195,7 @@ box_age_tumor <- cancer_new %>%
     ) +
     ggtitle("Age Comparison") +
     labs(title = "Overall Survival for Tumor Stage",
-       x = "Age (Years)",
+       x = "Tumor Stage",
        y = "Overall Survival (Months)", 
        color = "Tumor Stage") + 
     stat_summary(aes(tumor_stage, overall_survival_months, fill = tumor_stage),
@@ -203,7 +213,7 @@ box_age_death <- cancer_new %>%
     ) +
     ggtitle("Age Comparison") +
     labs(title = "Overall Survival for Living Condition",
-       x = "Age (Years)",
+       x = "Living Condition",
        y = "Overall Survival (Months)", 
        color = "Living Condition") + 
     stat_summary(aes(death_from_cancer, overall_survival_months, fill = death_from_cancer),
@@ -213,6 +223,9 @@ box_age_death <- cancer_new %>%
 grid.arrange(box_age_chemo, box_age_hormo, nrow = 1)
 grid.arrange(box_age_radio, box_age_type, nrow = 1)
 grid.arrange(box_age_tumor, box_age_death, nrow = 1)
+
+# grid.arrange(box_age_chemo, box_age_hormo, box_age_radio, ncol = 1)
+# grid.arrange(box_age_type, box_age_tumor, box_age_death, ncol = 1)
 ```
 
 #### Scatterplots of survival against interactions between age and categorical variables
@@ -337,7 +350,17 @@ grid.arrange(plot_age_tumor, plot_age_death, ncol = 1)
 
 #### Histograms of survival against interactions between age and categorical variables
 
--   
+-   The histogram for those that took chemotherapy compared to that for those without chemotherapy is significantly more skewed to the right.
+
+-   Histogram peaks for those that took hormone therapy are generally greater than for those without hormone therapy within the range of overall_survival_months between 45 and 195.
+
+-   The histogram distributions between radio therapy categories are relatively similar.
+
+-   The histogram for those that took mastectomy compared to that for those with breast preserving surgery is significantly more skewed to the right.
+
+-   The histogram for those with stage 3 tumors compared to that for the other tumor stages is significantly more skewed to the right.
+
+-   The histogram for those that died from disease is significantly skewed to the right, while the histogram for those that lived is significantly skewed to the left.
 
 ```{r}
 histo_age_type <- ggplot(cancer_new, aes(x = overall_survival_months, y = after_stat(density), fill = type_of_breast_surgery)) + 
@@ -440,9 +463,12 @@ grid.arrange(histo_age_tumor, histo_age_death, ncol = 1)
 ### Model selection
 
 -   As our goal is to determine how the various forms of therapy influence a patient's survival until death, interaction terms regarding all combinations of therapies will be considered, since it is unclear if the effect of one therapy will influence the effect of another (e.g. Chemotherapy and hormone therapy in similar timeframe).
+
 -   Interaction terms for age and each type of therapy are included, as prior studies have indicated varying degrees of influence between age and treatment method (Given, Given 2008; Cleveland Clinic, 2024; U.S. National Library of Medicine; Steinfeld, Diamond, Hanks, Coia, Kramer, 1989).
--   \[Insert something involving interaction between tumor and therapy\]
--   Due to not being significant parts of the question of interest and the indeterminate interaction between them and the therapies, interaction terms for `type_of_breast_surgery` and `death_from_cancer` are ignored for the full model.
+
+-   Interaction terms for tumor_stage and each type of therapy are also included since prior studies have indicated that the type of treatment a patient receives is influenced by the stage, size of tumor and the spread of cancer cells. (“Invasive Ductal Carcinoma”, 2024;”Treatment of breast cancer”, 2024)
+
+-   Due to not being significant parts of the question of interest and the indeterminate interaction between them and the therapies, interaction terms for type_of_breast_surgery and death_from_cancer are ignored for the full model.
 
 ```{r}
 # fullmod = lm(overall_survival_months ~ .*.,data=cancer_new)
@@ -462,7 +488,7 @@ summary(finalmod_backward)
 ```{r}
 nullmod = lm(overall_survival_months ~ 1, data = cancer_new)
 finalmod_forward = step(nullmod, scope = list(lower = nullmod, upper = fullmod), direction = "forward", trace = 0)
-summary(finalmod_back)
+summary(finalmod_forward)
 ```
 
 ```{r}
@@ -506,6 +532,12 @@ summary(finalmod_back)
 # }
 # 
 # finalmod2 = backward_selection(cancer_new, fullformula)
+```
+
+```{r}
+library(leaps)
+finalmod_reg = regsubsets(fullformula, data=cancer_new, method="exhaustive", nvmax = length(attr(terms(fullformula), "term.labels")))
+summary(finalmod_reg)
 ```
 
 ```{r}
