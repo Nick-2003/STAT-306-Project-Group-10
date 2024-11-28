@@ -367,3 +367,10 @@ fullmod3 = lm(fullformula, data=cancer_new_other)
 finalmod_both3 = step(fullmod3, direction = "both", trace = 0)
 summary(finalmod_both3)
 ```
+
+```{r}
+modelnew = lm(formula = log(overall_survival_months) ~ age_at_diagnosis + chemotherapy + hormone_therapy + tumor_stage + death_from_cancer + age_at_diagnosis:chemotherapy + chemotherapy:tumor_stage + hormone_therapy:tumor_stage, data = cancer_new)
+plot(modelnew$fitted.values, modelnew$residuals, xlab="Fitted Values", ylab="Residuals")
+abline(a = 0, b = 0)
+lines(lowess(modelnew$fitted.values, modelnew$residuals), col = "blue", lwd = 2)
+```
