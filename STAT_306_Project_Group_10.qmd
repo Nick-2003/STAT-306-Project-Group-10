@@ -56,7 +56,8 @@ library(gridExtra) # Extensions for grid system
 cancer = read.csv("METABRIC_RNA_Mutation.csv", header=TRUE)[,1:31]
 cancer_new_1 <- cancer %>% 
   drop_na(age_at_diagnosis, type_of_breast_surgery, tumor_size, tumor_stage, chemotherapy, hormone_therapy, radio_therapy, overall_survival_months, death_from_cancer) %>% 
-  filter(!(age_at_diagnosis==""), !(type_of_breast_surgery==""), !(tumor_size==""), !(tumor_stage==""), !(chemotherapy==""), !(hormone_therapy==""), !(radio_therapy==""), !(overall_survival_months==""), !(death_from_cancer==""), cancer_type_detailed == "Breast Invasive Ductal Carcinoma",) %>% 
+  # filter(!(age_at_diagnosis==""), !(type_of_breast_surgery==""), !(tumor_size==""), !(tumor_stage==""), !(chemotherapy==""), !(hormone_therapy==""), !(radio_therapy==""), !(overall_survival_months==""), !(death_from_cancer==""), cancer_type_detailed == "Breast Invasive Ductal Carcinoma",) %>% 
+  filter(!(age_at_diagnosis==""), !(type_of_breast_surgery==""), !(tumor_size==""), !(tumor_stage==""), !(chemotherapy==""), !(hormone_therapy==""), !(radio_therapy==""), !(overall_survival_months==""), !(death_from_cancer==""), !(death_from_cancer=="Died of Other Causes"), cancer_type_detailed == "Breast Invasive Ductal Carcinoma",) %>% 
   transform(
     type_of_breast_surgery = as.factor(type_of_breast_surgery), 
     tumor_stage = as.factor(tumor_stage), 
@@ -65,12 +66,14 @@ cancer_new_1 <- cancer %>%
     radio_therapy = as.factor(radio_therapy), 
     death_from_cancer = as.factor(death_from_cancer)
     ) %>% 
-  select(age_at_diagnosis, type_of_breast_surgery, tumor_stage, chemotherapy, hormone_therapy, radio_therapy, death_from_cancer,  overall_survival_months) 
+  select(age_at_diagnosis, type_of_breast_surgery, tumor_stage, chemotherapy, hormone_therapy, radio_therapy, death_from_cancer, overall_survival_months) 
 # !(death_from_cancer=="")
 summary(cancer_new_1)
 
 cancer_new <- cancer_new_1 %>% 
   filter(!(tumor_stage==0), !(tumor_stage==4),)
+# %>% 
+#   select(age_at_diagnosis, type_of_breast_surgery, tumor_stage, chemotherapy, hormone_therapy, radio_therapy, overall_survival_months) 
   
 cancer_new$tumor_stage <- relevel(factor(cancer_new$tumor_stage), ref = "1")
 cancer_new$death_from_cancer <- relevel(factor(cancer_new$death_from_cancer), ref = "Living")
@@ -473,8 +476,11 @@ grid.arrange(histo_age_tumor, histo_age_death, ncol = 1)
 ```{r}
 # fullmod = lm(overall_survival_months ~ .*.,data=cancer_new)
 fullformula = overall_survival_months ~ age_at_diagnosis + chemotherapy * hormone_therapy * radio_therapy + age_at_diagnosis : chemotherapy + age_at_diagnosis : hormone_therapy + age_at_diagnosis : radio_therapy + tumor_stage + tumor_stage : chemotherapy + tumor_stage : hormone_therapy + tumor_stage : radio_therapy + type_of_breast_surgery + death_from_cancer 
+# + death_from_cancer : chemotherapy + death_from_cancer : hormone_therapy + death_from_cancer : radio_therapy
 
 fullmod = lm(fullformula, data=cancer_new)
+# summary(fullmod)
+
 # finalmod_both = step(fullmod, direction = "both", trace = 1)
 finalmod_both = step(fullmod, direction = "both", trace = 0)
 summary(finalmod_both)

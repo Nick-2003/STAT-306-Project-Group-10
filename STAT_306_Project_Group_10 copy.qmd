@@ -390,6 +390,13 @@ fullmod_m = lm(fullformula, data=cancer_new_3)
 # finalmod_both = step(fullmod, direction = "both", trace = 1)
 finalmod_both_m = step(fullmod_m, direction = "both", trace = 0)
 summary(finalmod_both_m)
+
+summary(lm(formula = overall_survival_months ~ age_at_diagnosis + chemotherapy + 
+    hormone_therapy + tumor_stage + age_at_diagnosis:chemotherapy + 
+    chemotherapy:tumor_stage + hormone_therapy:tumor_stage + radio_therapy + radio_therapy : tumor_stage + radio_therapy : age_at_diagnosis, data = cancer_new_3))
+
+finalmod_reg = regsubsets(fullformula, data=cancer_new_3, method="exhaustive", nvmax = length(attr(terms(fullformula), "term.labels")))
+summary(finalmod_reg)
 ```
 
 ```{r}
