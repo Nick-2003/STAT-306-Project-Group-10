@@ -498,46 +498,10 @@ summary(finalmod_forward)
 ```
 
 ```{r}
-# # Define the function for backward selection
-# backward_selection <- function(data, formula) {
-#   # Fit the full model
-#   models <- list()
-#   models[[1]] <- lm(formula, data = data)
-#   # print(summary(models[[1]]))
-#   
-#   # Perform backward selection
-#   current_formula <- formula
-#   model_index <- 2
-#   
-#   while (TRUE) {
-#     model <- lm(current_formula, data = data)
-#     
-#     # Get p-values of the coefficients
-#     p_values <- summary(model)$coefficients[, 4]
-#     
-#     # Exclude the intercept
-#     p_values <- p_values[-1]
-#     
-#     # Check if any predictor has a p-value greater than 0.05
-#     if (max(p_values, na.rm = TRUE) > 0.05) {
-#       # Remove the predictor with the highest p-value
-#       predictor_to_remove <- names(which.max(p_values))
-#       current_formula <- update(current_formula, as.formula(paste(". ~ . -", predictor_to_remove)))
-#       
-#       # Fit the new model
-#       models[[model_index]] <- lm(current_formula, data = data)
-#       # print(summary(models[[model_index]]))
-#       model_index <- model_index + 1
-#     } else {
-#       # Stop if all predictors are significant
-#       break
-#     }
-#   }
-#   
-#   return(models)
-# }
-# 
-# finalmod2 = backward_selection(cancer_new, fullformula)
+summary(finalmod_both)
+
+finalmod_both_1 = lm(formula = overall_survival_months ~ age_at_diagnosis + chemotherapy + hormone_therapy + tumor_stage + death_from_cancer + chemotherapy:tumor_stage + hormone_therapy:tumor_stage, data = cancer_new)
+summary(finalmod_both_1)
 ```
 
 ```{r}
@@ -552,11 +516,18 @@ summary(finalmod_reg)
 plot(finalmod_both$fitted.values, finalmod_both$residuals, xlab="Fitted Values", ylab="Residuals")
 abline(a = 0, b = 0)
 lines(lowess(finalmod_both$fitted.values, finalmod_both$residuals), col = "blue", lwd = 2)
+
+plot(finalmod_both_1$fitted.values, finalmod_both$residuals, xlab="Fitted Values", ylab="Residuals")
+abline(a = 0, b = 0)
+lines(lowess(finalmod_both$fitted.values, finalmod_both$residuals), col = "blue", lwd = 2)
 ```
 
 ```{r}
 qqnorm(finalmod_both$residuals)
 qqline(finalmod_both$residuals)
+
+qqnorm(finalmod_both_1$residuals)
+qqline(finalmod_both_1$residuals)
 ```
 
 ## Conclusion
