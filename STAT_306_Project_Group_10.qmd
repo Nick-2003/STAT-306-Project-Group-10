@@ -481,8 +481,8 @@ fullformula = overall_survival_months ~ age_at_diagnosis + chemotherapy * hormon
 fullmod = lm(fullformula, data=cancer_new)
 # summary(fullmod)
 
-# finalmod_both = step(fullmod, direction = "both", trace = 1)
-finalmod_both = step(fullmod, direction = "both", trace = 0)
+finalmod_both = step(fullmod, direction = "both", trace = 1)
+# finalmod_both = step(fullmod, direction = "both", trace = 0)
 summary(finalmod_both)
 ```
 
