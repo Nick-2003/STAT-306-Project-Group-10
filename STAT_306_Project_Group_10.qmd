@@ -115,29 +115,12 @@ qqline(reg_start$residuals)
 -   Those that died from disease have significantly lower overall_survival_months values than all other categories and the most extreme outliers, while those that died from other causes have a lower mean and median overall_survival_months than those that lived.
 
 ```{r}
-box_age_type <- cancer_new %>%
-    ggplot() +
-    geom_boxplot(aes(type_of_breast_surgery, overall_survival_months, fill = type_of_breast_surgery)) +
-    theme(
-        text = element_text(size = 8),
-        plot.title = element_text(face = "bold"),
-        axis.title = element_text(face = "bold"), 
-        axis.text.x = element_text(angle = 45)
-    ) +
-    ggtitle("Age Comparison") +
-    labs(title = "Overall Survival for each Breast Surgery",
-       x = "Breast Surgery",
-       y = "Overall Survival (Months)", 
-       color = "Breast Surgery") + 
-    stat_summary(aes(type_of_breast_surgery, overall_survival_months, fill = type_of_breast_surgery),
-                 fun = mean, colour = "yellow", geom = "point", shape = 18, size = 5
-                )
 
 box_age_chemo <- cancer_new %>%
     ggplot() +
     geom_boxplot(aes(chemotherapy, overall_survival_months, fill = chemotherapy)) +
     theme(
-        text = element_text(size = 8),
+        text = element_text(size = 6),
         plot.title = element_text(face = "bold"),
         axis.title = element_text(face = "bold"), 
 #        axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)
@@ -155,7 +138,7 @@ box_age_hormo <- cancer_new %>%
     ggplot() +
     geom_boxplot(aes(hormone_therapy, overall_survival_months, fill = hormone_therapy)) +
     theme(
-        text = element_text(size = 8),
+        text = element_text(size = 6),
         plot.title = element_text(face = "bold"),
         axis.title = element_text(face = "bold"), 
 #        axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)
@@ -173,7 +156,7 @@ box_age_radio <- cancer_new %>%
     ggplot() +
     geom_boxplot(aes(radio_therapy, overall_survival_months, fill = radio_therapy)) +
     theme(
-        text = element_text(size = 8),
+        text = element_text(size = 6),
         plot.title = element_text(face = "bold"),
         axis.title = element_text(face = "bold"), 
 #        axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)
@@ -187,11 +170,29 @@ box_age_radio <- cancer_new %>%
                  fun = mean, colour = "yellow", geom = "point", shape = 18, size = 5
                 )
 
+box_age_type <- cancer_new %>%
+    ggplot() +
+    geom_boxplot(aes(type_of_breast_surgery, overall_survival_months, fill = type_of_breast_surgery)) +
+    theme(
+        text = element_text(size = 6),
+        plot.title = element_text(face = "bold"),
+        axis.title = element_text(face = "bold"), 
+        axis.text.x = element_text(angle = 45)
+    ) +
+    ggtitle("Age Comparison") +
+    labs(title = "Overall Survival for each Breast Surgery",
+       x = "Breast Surgery",
+       y = "Overall Survival (Months)", 
+       color = "Breast Surgery") + 
+    stat_summary(aes(type_of_breast_surgery, overall_survival_months, fill = type_of_breast_surgery),
+                 fun = mean, colour = "yellow", geom = "point", shape = 18, size = 5
+                )
+
 box_age_tumor <- cancer_new %>%
     ggplot() +
     geom_boxplot(aes(tumor_stage, overall_survival_months, fill = tumor_stage)) +
     theme(
-        text = element_text(size = 8),
+        text = element_text(size = 6),
         plot.title = element_text(face = "bold"),
         axis.title = element_text(face = "bold"), 
 #        axis.text.x = element_text(angle = 45)
@@ -209,7 +210,7 @@ box_age_death <- cancer_new %>%
     ggplot() +
     geom_boxplot(aes(death_from_cancer, overall_survival_months, fill = death_from_cancer)) +
     theme(
-        text = element_text(size = 8),
+        text = element_text(size = 6),
         plot.title = element_text(face = "bold"),
         axis.title = element_text(face = "bold"), 
         axis.text.x = element_text(angle = 45)
@@ -223,12 +224,12 @@ box_age_death <- cancer_new %>%
                  fun = mean, colour = "yellow", geom = "point", shape = 18, size = 5
                 )
 
-grid.arrange(box_age_chemo, box_age_hormo, nrow = 1)
-grid.arrange(box_age_radio, box_age_type, nrow = 1)
-grid.arrange(box_age_tumor, box_age_death, nrow = 1)
+# grid.arrange(box_age_chemo, box_age_hormo, nrow = 1)
+# grid.arrange(box_age_radio, box_age_type, nrow = 1)
+# grid.arrange(box_age_tumor, box_age_death, nrow = 1)
 
-# grid.arrange(box_age_chemo, box_age_hormo, box_age_radio, ncol = 1)
-# grid.arrange(box_age_type, box_age_tumor, box_age_death, ncol = 1)
+grid.arrange(box_age_chemo, box_age_hormo, box_age_radio, nrow = 1)
+grid.arrange(box_age_type, box_age_tumor, box_age_death, nrow = 1)
 ```
 
 #### Scatterplots of survival against interactions between age and categorical variables
@@ -238,23 +239,8 @@ grid.arrange(box_age_tumor, box_age_death, nrow = 1)
 ```{r}
 options(repr.plot.width = 20, repr.plot.height = 5)
 
-reg_0 = lm(overall_survival_months~age_at_diagnosis*type_of_breast_surgery,data=cancer_new)  # TODO
-summary(reg_0)
-plot_age_type <- ggplot(cancer_new, aes(x = age_at_diagnosis, y = overall_survival_months, color = type_of_breast_surgery)) +
-  geom_point() +  
-  geom_smooth(method = "lm", na.rm = TRUE) +  
-  theme(
-    text = element_text(size = 7), 
-    plot.title = element_text(face = "bold"), 
-    axis.title = element_text(face = "bold") 
-  ) +
-  labs(title = "Overall Survival against Age and Breast Surgery",
-       x = "Age (Years)",
-       y = "Overall Survival (Months)", 
-       color = "Breast Surgery")
-
-reg_1 = lm(overall_survival_months~age_at_diagnosis*chemotherapy,data=cancer_new)  # TODO
-summary(reg_1)
+reg_chemo = lm(overall_survival_months~age_at_diagnosis*chemotherapy,data=cancer_new)  # TODO
+summary(reg_chemo)
 plot_age_chemo <- ggplot(cancer_new, aes(x = age_at_diagnosis, y = overall_survival_months, color = chemotherapy)) +
   geom_point() +  
   geom_smooth(method = "lm", na.rm = TRUE) +  
@@ -268,8 +254,8 @@ plot_age_chemo <- ggplot(cancer_new, aes(x = age_at_diagnosis, y = overall_survi
        y = "Overall Survival (Months)", 
        color = "Chemotherapy")
 
-reg_2 = lm(overall_survival_months~age_at_diagnosis*hormone_therapy,data=cancer_new)  # TODO
-summary(reg_2)
+reg_hormo = lm(overall_survival_months~age_at_diagnosis*hormone_therapy,data=cancer_new)  # TODO
+summary(reg_hormo)
 plot_age_hormo <- ggplot(cancer_new, aes(x = age_at_diagnosis, y = overall_survival_months, color = hormone_therapy)) +
   geom_point() +  
   geom_smooth(method = "lm", na.rm = TRUE) +  
@@ -283,8 +269,8 @@ plot_age_hormo <- ggplot(cancer_new, aes(x = age_at_diagnosis, y = overall_survi
        y = "Overall Survival (Months)", 
        color = "Hormone Therapy")
 
-reg_3 = lm(overall_survival_months~age_at_diagnosis*radio_therapy,data=cancer_new)  # TODO
-summary(reg_3)
+reg_type = lm(overall_survival_months~age_at_diagnosis*radio_therapy,data=cancer_new)  # TODO
+summary(reg_type)
 plot_age_radio <- ggplot(cancer_new, aes(x = age_at_diagnosis, y = overall_survival_months, color = radio_therapy)) +
   geom_point() +  
   geom_smooth(method = "lm", na.rm = TRUE) +  
@@ -298,8 +284,23 @@ plot_age_radio <- ggplot(cancer_new, aes(x = age_at_diagnosis, y = overall_survi
        y = "Overall Survival (Months)", 
        color = "Radio Therapy")
 
-reg_4 = lm(overall_survival_months~age_at_diagnosis*tumor_stage,data=cancer_new)  # TODO
-summary(reg_4)
+reg_type = lm(overall_survival_months~age_at_diagnosis*type_of_breast_surgery,data=cancer_new)  # TODO
+summary(reg_type)
+plot_age_type <- ggplot(cancer_new, aes(x = age_at_diagnosis, y = overall_survival_months, color = type_of_breast_surgery)) +
+  geom_point() +  
+  geom_smooth(method = "lm", na.rm = TRUE) +  
+  theme(
+    text = element_text(size = 7), 
+    plot.title = element_text(face = "bold"), 
+    axis.title = element_text(face = "bold") 
+  ) +
+  labs(title = "Overall Survival against Age and Breast Surgery",
+       x = "Age (Years)",
+       y = "Overall Survival (Months)", 
+       color = "Breast Surgery")
+
+reg_tumor = lm(overall_survival_months~age_at_diagnosis*tumor_stage,data=cancer_new)  # TODO
+summary(reg_tumor)
 plot_age_tumor <- ggplot(cancer_new, aes(x = age_at_diagnosis, y = overall_survival_months, color = tumor_stage)) +
   geom_point() +  
   geom_smooth(method = "lm", na.rm = TRUE) +  
@@ -317,8 +318,8 @@ plot_age_tumor <- ggplot(cancer_new, aes(x = age_at_diagnosis, y = overall_survi
 # summary(reg_3_1)
 # scatterplot(overall_survival_months~age_at_diagnosis+radio_therapy, data=cancer_new, smooth=FALSE, main="Overall Survival against Age and Radio Therapy", xlab="Age (Years)", ylab="Overall Survival (Months)")
 
-reg_5 = lm(overall_survival_months~age_at_diagnosis*death_from_cancer,data=cancer_new)  # TODO
-summary(reg_5)
+reg_death = lm(overall_survival_months~age_at_diagnosis*death_from_cancer,data=cancer_new)  # TODO
+summary(reg_death)
 plot_age_death <- ggplot(cancer_new, aes(x = age_at_diagnosis, y = overall_survival_months, color = death_from_cancer)) +
   geom_point() +  
   geom_smooth(method = "lm", na.rm = TRUE) +  
@@ -332,16 +333,16 @@ plot_age_death <- ggplot(cancer_new, aes(x = age_at_diagnosis, y = overall_survi
        y = "Overall Survival (Months)", 
        color = "Living Condition")
 
-# grid.arrange(plot_age_chemo, plot_age_hormo, plot_age_radio)
-# grid.arrange(plot_age_type, plot_age_tumor, plot_age_death)
+grid.arrange(plot_age_chemo, plot_age_hormo, plot_age_radio, ncol = 1)
+grid.arrange(plot_age_type, plot_age_tumor, plot_age_death, ncol = 1)
 
 # grid.arrange(plot_age_chemo, plot_age_hormo, nrow = 1)
 # grid.arrange(plot_age_radio, plot_age_type, nrow = 1)
 # grid.arrange(plot_age_tumor, plot_age_death, nrow = 1)
 
-grid.arrange(plot_age_chemo, plot_age_hormo, ncol = 1)
-grid.arrange(plot_age_radio, plot_age_type, ncol = 1)
-grid.arrange(plot_age_tumor, plot_age_death, ncol = 1)
+# grid.arrange(plot_age_chemo, plot_age_hormo, ncol = 1)
+# grid.arrange(plot_age_radio, plot_age_type, ncol = 1)
+# grid.arrange(plot_age_tumor, plot_age_death, ncol = 1)
 
 # plot_age_chemo
 # plot_age_hormo
@@ -444,16 +445,16 @@ histo_age_death <- ggplot(cancer_new, aes(x = overall_survival_months, y = after
        y = "Density", 
        color = "Living Condition")
 
-# grid.arrange(histo_age_chemo, histo_age_hormo, histo_age_radio)
-# grid.arrange(histo_age_type, histo_age_tumor, histo_age_death)
+grid.arrange(histo_age_chemo, histo_age_hormo, histo_age_radio, ncol = 1)
+grid.arrange(histo_age_type, histo_age_tumor, histo_age_death, ncol = 1)
 
 # grid.arrange(histo_age_chemo, histo_age_hormo, nrow = 1)
 # grid.arrange(histo_age_radio, histo_age_type, nrow = 1)
 # grid.arrange(histo_age_tumor, histo_age_death, nrow = 1)
 
-grid.arrange(histo_age_chemo, histo_age_hormo, ncol = 1)
-grid.arrange(histo_age_radio, histo_age_type, ncol = 1)
-grid.arrange(histo_age_tumor, histo_age_death, ncol = 1)
+# grid.arrange(histo_age_chemo, histo_age_hormo, ncol = 1)
+# grid.arrange(histo_age_radio, histo_age_type, ncol = 1)
+# grid.arrange(histo_age_tumor, histo_age_death, ncol = 1)
 
 # histo_age_chemo
 # histo_age_hormo
@@ -502,6 +503,10 @@ summary(finalmod_both)
 
 finalmod_both_1 = lm(formula = overall_survival_months ~ age_at_diagnosis + chemotherapy + hormone_therapy + tumor_stage + death_from_cancer + chemotherapy:tumor_stage + hormone_therapy:tumor_stage, data = cancer_new)
 summary(finalmod_both_1)
+
+# install.packages("AICcmodavg")
+library(AICcmodavg)
+aictab(cand.set = list(finalmod_both, finalmod_both_1))
 ```
 
 ```{r}
