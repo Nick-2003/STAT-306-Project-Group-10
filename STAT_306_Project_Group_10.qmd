@@ -23,6 +23,8 @@ Our project question is:
 Our analysis will involve the inference of covariates within linear models, as we seek to determine the interaction of cancer therapies on allowing patients to survive longer.
 
 -   Variables from columns 32 to 693 consist of genetic attributes containing m-RNA levels z-score for 331 genes, and mutation for 175 genes; they have been omitted due to being difficult to interpret.
+-   Due to the distribution of "cancer_type_detailed" categories and for ease of computation, we will be filtering the dataset for IDC patients that are either alive or dead from disease, as IDC consists of the majority of the dataset, and the patients that have died from non-disease causes are not relevant to the project question and too nonspecific to be consistent.
+-   "tumor_size" has been removed due to already partly contributing to "tumor_stage". (Susan G. Komen®, 2024)
 
 ## Analysis
 
@@ -42,11 +44,7 @@ library(gridExtra) # Extensions for grid system
 
 ### Uploading relevant table and cleaning data
 
--   Due to the distribution of "cancer_type_detailed" categories and for ease of computation, we will be filtering the dataset for deceased IDC patients only, as IDC consists of the majority of the dataset, and the "overall_survival" column for living patients would be inconsistent for living patients due to time.
-
--   "tumor_size" has been removed due to already partly contributing to "tumor_stage". (Susan G. Komen®, 2024)
-
--   All rows with "N/A" or "" as their values for any column have been removed to ensure no data is missing.
+-   All rows with "N/A" or "" for any relevant columns have been removed to ensure no data is missing.
 
 -   All categorical variables are transformed to be treated as categorical by the table.
 
@@ -67,13 +65,10 @@ cancer_new_1 <- cancer %>%
     death_from_cancer = as.factor(death_from_cancer)
     ) %>% 
   select(age_at_diagnosis, type_of_breast_surgery, tumor_stage, chemotherapy, hormone_therapy, radio_therapy, death_from_cancer, overall_survival_months) 
-# !(death_from_cancer=="")
-summary(cancer_new_1)
+# summary(cancer_new_1)
 
 cancer_new <- cancer_new_1 %>% 
   filter(!(tumor_stage==0), !(tumor_stage==4),)
-# %>% 
-#   select(age_at_diagnosis, type_of_breast_surgery, tumor_stage, chemotherapy, hormone_therapy, radio_therapy, overall_survival_months) 
   
 cancer_new$tumor_stage <- relevel(factor(cancer_new$tumor_stage), ref = "1")
 cancer_new$death_from_cancer <- relevel(factor(cancer_new$death_from_cancer), ref = "Living")
@@ -100,19 +95,19 @@ qqnorm(reg_start$residuals)
 qqline(reg_start$residuals)
 ```
 
-#### Boxplots
+#### **Boxplots of survival against interactions between age and categorical variables**
 
 -   overall_survival_months for those that took chemotherapy is generally lower than for those without in terms of mean and median, and the range of overall_survival_months is smaller.
 
 -   Mean and median overall_survival_months for those that took hormone therapy are lower than those without, while the interquartile range for patients with hormone therapy is smaller than for those without.
 
--   Boxplots for overall_survival_months against each radio therapy class are extremely similar, including the mean and median values.
+-   Boxplots for overall_survival_months against each radio_therapy class are extremely similar, including the mean and median values.
 
 -   overall_survival_months for those with mastectomy is lower than for those with breast conserving surgery in terms of mean and median, and the values are more skewed toward lower values.
 
 -   Increasing levels of tumor stages provide decreasing mean, median and percentile values.
 
--   Those that died from disease have significantly lower overall_survival_months values than all other categories and the most extreme outliers, while those that died from other causes have a lower mean and median overall_survival_months than those that lived.
+-   Patients that died from disease have significantly lower overall_survival_months values than those who lived and the most extreme outliers.
 
 ```{r}
 
@@ -234,7 +229,11 @@ grid.arrange(box_age_type, box_age_tumor, box_age_death, nrow = 1)
 
 #### Scatterplots of survival against interactions between age and categorical variables
 
--   
+-   overall_survival_months varies significantly by chemotherapy, tumor_stage, and death_from_cancer, and the interaction terms for age with chemotherapy, type_of_breast_surgery, tumor_stage, and death_from_cancer appear to be statistically significant.
+
+-   Confidence intervals of linear models heavily overlap for hormone_therapy and radio_therapy. 
+
+-   Confidence intervals of linear models for chemotherapy, type_of_breast_surgery and tumor_stage only overlap for more extreme age values.
 
 ```{r}
 options(repr.plot.width = 20, repr.plot.height = 5)
@@ -243,7 +242,7 @@ reg_chemo = lm(overall_survival_months~age_at_diagnosis*chemotherapy,data=cancer
 summary(reg_chemo)
 plot_age_chemo <- ggplot(cancer_new, aes(x = age_at_diagnosis, y = overall_survival_months, color = chemotherapy)) +
   geom_point() +  
-  geom_smooth(method = "lm", na.rm = TRUE) +  
+  geom_smooth(method = "lm", se= TRUE, na.rm = TRUE) +  
   theme(
     text = element_text(size = 7), 
     plot.title = element_text(face = "bold"), 
@@ -258,7 +257,7 @@ reg_hormo = lm(overall_survival_months~age_at_diagnosis*hormone_therapy,data=can
 summary(reg_hormo)
 plot_age_hormo <- ggplot(cancer_new, aes(x = age_at_diagnosis, y = overall_survival_months, color = hormone_therapy)) +
   geom_point() +  
-  geom_smooth(method = "lm", na.rm = TRUE) +  
+  geom_smooth(method = "lm", se= TRUE, na.rm = TRUE) +  
   theme(
     text = element_text(size = 7), 
     plot.title = element_text(face = "bold"), 
@@ -273,7 +272,7 @@ reg_type = lm(overall_survival_months~age_at_diagnosis*radio_therapy,data=cancer
 summary(reg_type)
 plot_age_radio <- ggplot(cancer_new, aes(x = age_at_diagnosis, y = overall_survival_months, color = radio_therapy)) +
   geom_point() +  
-  geom_smooth(method = "lm", na.rm = TRUE) +  
+  geom_smooth(method = "lm", se= TRUE, na.rm = TRUE) +  
   theme(
     text = element_text(size = 7), 
     plot.title = element_text(face = "bold"), 
@@ -288,7 +287,7 @@ reg_type = lm(overall_survival_months~age_at_diagnosis*type_of_breast_surgery,da
 summary(reg_type)
 plot_age_type <- ggplot(cancer_new, aes(x = age_at_diagnosis, y = overall_survival_months, color = type_of_breast_surgery)) +
   geom_point() +  
-  geom_smooth(method = "lm", na.rm = TRUE) +  
+  geom_smooth(method = "lm", se= TRUE, na.rm = TRUE) +  
   theme(
     text = element_text(size = 7), 
     plot.title = element_text(face = "bold"), 
@@ -303,7 +302,7 @@ reg_tumor = lm(overall_survival_months~age_at_diagnosis*tumor_stage,data=cancer_
 summary(reg_tumor)
 plot_age_tumor <- ggplot(cancer_new, aes(x = age_at_diagnosis, y = overall_survival_months, color = tumor_stage)) +
   geom_point() +  
-  geom_smooth(method = "lm", na.rm = TRUE) +  
+  geom_smooth(method = "lm", se= TRUE, na.rm = TRUE) +  
   theme(
     text = element_text(size = 7), 
     plot.title = element_text(face = "bold"), 
@@ -322,7 +321,7 @@ reg_death = lm(overall_survival_months~age_at_diagnosis*death_from_cancer,data=c
 summary(reg_death)
 plot_age_death <- ggplot(cancer_new, aes(x = age_at_diagnosis, y = overall_survival_months, color = death_from_cancer)) +
   geom_point() +  
-  geom_smooth(method = "lm", na.rm = TRUE) +  
+  geom_smooth(method = "lm", se= TRUE, na.rm = TRUE) +  
   theme(
     text = element_text(size = 7), 
     plot.title = element_text(face = "bold"), 
@@ -333,23 +332,15 @@ plot_age_death <- ggplot(cancer_new, aes(x = age_at_diagnosis, y = overall_survi
        y = "Overall Survival (Months)", 
        color = "Living Condition")
 
-grid.arrange(plot_age_chemo, plot_age_hormo, plot_age_radio, ncol = 1)
-grid.arrange(plot_age_type, plot_age_tumor, plot_age_death, ncol = 1)
+# grid.arrange(plot_age_chemo, plot_age_hormo, plot_age_radio, ncol = 1)
+# grid.arrange(plot_age_type, plot_age_tumor, plot_age_death, ncol = 1)
 
-# grid.arrange(plot_age_chemo, plot_age_hormo, nrow = 1)
-# grid.arrange(plot_age_radio, plot_age_type, nrow = 1)
-# grid.arrange(plot_age_tumor, plot_age_death, nrow = 1)
-
-# grid.arrange(plot_age_chemo, plot_age_hormo, ncol = 1)
-# grid.arrange(plot_age_radio, plot_age_type, ncol = 1)
-# grid.arrange(plot_age_tumor, plot_age_death, ncol = 1)
-
-# plot_age_chemo
-# plot_age_hormo
-# plot_age_radio
-# plot_age_type
-# plot_age_tumor
-# plot_age_death
+plot_age_chemo
+plot_age_hormo
+plot_age_radio
+plot_age_type
+plot_age_tumor
+plot_age_death
 ```
 
 #### Histograms of survival against interactions between age and categorical variables
@@ -364,7 +355,7 @@ grid.arrange(plot_age_type, plot_age_tumor, plot_age_death, ncol = 1)
 
 -   The histogram for those with stage 3 tumors compared to that for the other tumor stages is significantly more skewed to the right.
 
--   The histogram for those that died from disease is significantly skewed to the right, while the histogram for those that lived is significantly skewed to the left.
+-   The histogram for those that died from disease is significantly skewed to the right, while the histogram for those that lived is significantly skewed to the left in comparison.
 
 ```{r}
 histo_age_type <- ggplot(cancer_new, aes(x = overall_survival_months, y = after_stat(density), fill = type_of_breast_surgery)) + 
@@ -445,23 +436,15 @@ histo_age_death <- ggplot(cancer_new, aes(x = overall_survival_months, y = after
        y = "Density", 
        color = "Living Condition")
 
-grid.arrange(histo_age_chemo, histo_age_hormo, histo_age_radio, ncol = 1)
-grid.arrange(histo_age_type, histo_age_tumor, histo_age_death, ncol = 1)
+# grid.arrange(histo_age_chemo, histo_age_hormo, histo_age_radio, ncol = 1)
+# grid.arrange(histo_age_type, histo_age_tumor, histo_age_death, ncol = 1)
 
-# grid.arrange(histo_age_chemo, histo_age_hormo, nrow = 1)
-# grid.arrange(histo_age_radio, histo_age_type, nrow = 1)
-# grid.arrange(histo_age_tumor, histo_age_death, nrow = 1)
-
-# grid.arrange(histo_age_chemo, histo_age_hormo, ncol = 1)
-# grid.arrange(histo_age_radio, histo_age_type, ncol = 1)
-# grid.arrange(histo_age_tumor, histo_age_death, ncol = 1)
-
-# histo_age_chemo
-# histo_age_hormo
-# histo_age_radio
-# histo_age_type
-# histo_age_tumor
-# histo_age_death
+histo_age_chemo
+histo_age_hormo
+histo_age_radio
+histo_age_type
+histo_age_tumor
+histo_age_death
 ```
 
 ### Model selection
@@ -535,7 +518,23 @@ qqnorm(finalmod_both_1$residuals)
 qqline(finalmod_both_1$residuals)
 ```
 
-## Conclusion
+## Discussion
+
+### **Analysis**
+
+The final regression model includes the following key variables: age, chemotherapy, hormone therapy, and tumor stage (specifically stages 2 and 3). It also accounts for the outcome of death from cancer (death from cancer and death from other causes) and incorporates interaction terms between age and chemotherapy, chemotherapy and tumor stage (for stages 2 and 3), as well as hormone therapy and tumor stage (for stages 2 and 3).
+
+The results from the three model selection methods (bidirectional selection, backward selection, and forward selection) consistently provided the same set of covariates, and all of them are statistically significant on the 10% significance level, and only age_at_diagnosis:chemotherapy1, chemotherapy1:tumor_stage3, and hormone_therapy1:tumor_stage2 are not statistically significant on the 5% significance level. This consistency across methods enhances the credibility of the findings, indicating that the observed relationships are relatively reliable and not due to random chance.
+
+In the model selection, we discarded radiotherapy, indicating that it doesn’t provide a significant influence on the survival period of patients. For chemotherapy, the interaction terms between chemotherapy: tumor stage 2 and chemotherapy: tumor stage 3 provide insight into the relationship between tumor stage and chemotherapy. In tumor stage 1, the slope of -62.7677 shows the most negative correlation with survival. This negative effect diminishes in stage 2 with a slope of -69.5494, and further decreases in stage 3 with a slope of -60.5349. This indicates that while chemotherapy consistently reduces survival periods, its negative effects on survival are lower at higher tumor stages. 
+
+For hormone therapy, it initially reduces the survival period by 24.6917 units at tumor stage 1, but its effect decreases to a reduction of only 5.9808 units in stage 2, and it even leads to an increase in survival by 19.9754 units in stage 3. From tumor stage 1 to stage 3, the impact of hormone therapy changes from harmful to beneficial, ultimately improving survival chances. This highlights the importance of carefully considering the use of hormone therapy based on tumor stage.
+
+To further validate the reliability of the model, the plot of fitted values versus residuals shows a good fit with residuals centered around zero, demonstrating homoscedasticity. Additionally, the residuals are randomly scattered without any discernible pattern beyond being centered around 0, suggesting that the errors are independent and that the relationship between the independent variables and the dependent variable is assumed to be linear. Furthermore, the points in the QQ plot align closely along the diagonal line, indicating that the residuals are approximately normally distributed. These observations confirm that the regression model does not violate the key assumptions of regression analysis, thereby minimizing the risk of drawing incorrect conclusions.
+
+### **Conclusion** 
+
+To address our initial research question, our model suggests that chemotherapy and hormone therapy have varying influences on survival time before death depending on the initial tumor stage while radiotherapy does not have a significant association with survival time before death. For chemotherapy,
 
 ## Appendix
 
