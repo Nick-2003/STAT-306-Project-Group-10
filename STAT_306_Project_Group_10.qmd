@@ -54,7 +54,6 @@ library(gridExtra) # Extensions for grid system
 cancer = read.csv("METABRIC_RNA_Mutation.csv", header=TRUE)[,1:31]
 cancer_new_1 <- cancer %>% 
   drop_na(age_at_diagnosis, type_of_breast_surgery, tumor_size, tumor_stage, chemotherapy, hormone_therapy, radio_therapy, overall_survival_months, death_from_cancer) %>% 
-  # filter(!(age_at_diagnosis==""), !(type_of_breast_surgery==""), !(tumor_size==""), !(tumor_stage==""), !(chemotherapy==""), !(hormone_therapy==""), !(radio_therapy==""), !(overall_survival_months==""), !(death_from_cancer==""), cancer_type_detailed == "Breast Invasive Ductal Carcinoma",) %>% 
   filter(!(age_at_diagnosis==""), !(type_of_breast_surgery==""), !(tumor_size==""), !(tumor_stage==""), !(chemotherapy==""), !(hormone_therapy==""), !(radio_therapy==""), !(overall_survival_months==""), !(death_from_cancer==""), !(death_from_cancer=="Died of Other Causes"), cancer_type_detailed == "Breast Invasive Ductal Carcinoma",) %>% 
   transform(
     type_of_breast_surgery = as.factor(type_of_breast_surgery), 
@@ -65,7 +64,7 @@ cancer_new_1 <- cancer %>%
     death_from_cancer = as.factor(death_from_cancer)
     ) %>% 
   select(age_at_diagnosis, type_of_breast_surgery, tumor_stage, chemotherapy, hormone_therapy, radio_therapy, death_from_cancer, overall_survival_months) 
-# summary(cancer_new_1)
+summary(cancer_new_1)
 
 cancer_new <- cancer_new_1 %>% 
   filter(!(tumor_stage==0), !(tumor_stage==4),)
@@ -481,60 +480,95 @@ finalmod_forward = step(nullmod, scope = list(lower = nullmod, upper = fullmod),
 summary(finalmod_forward)
 ```
 
+### Model selection 2
+
 ```{r}
 summary(finalmod_both)
 
 finalmod_both_1 = lm(formula = overall_survival_months ~ age_at_diagnosis + chemotherapy + hormone_therapy + tumor_stage + death_from_cancer + chemotherapy:tumor_stage + hormone_therapy:tumor_stage, data = cancer_new)
 summary(finalmod_both_1)
-
-# install.packages("AICcmodavg")
-library(AICcmodavg)
-aictab(cand.set = list(finalmod_both, finalmod_both_1))
 ```
+
+### Model comparisons
+
+-   regsubsets() applied to the original full model
 
 ```{r}
 library(leaps)
-finalmod_reg = regsubsets(fullformula, data=cancer_new, method="exhaustive", nvmax = length(attr(terms(fullformula), "term.labels")))
+# finalmod_reg = regsubsets(fullformula, data=cancer_new, method="exhaustive", nvmax = length(attr(terms(fullformula), "term.labels")))
+finalmod_reg = regsubsets(fullformula, data=cancer_new, method="exhaustive", nvmax = 13)
 summary(finalmod_reg)
+
+results <- as.data.frame(summary(finalmod_reg)$which)
+results$adj_r_squared <- summary(finalmod_reg)$adjr2
+results <- results[, c("adj_r_squared", names(results)[-which(names(results) == "adj_r_squared")])]
+print(results)
+write.csv(results, "finalmod_reg_results.csv", row.names = FALSE)
 ```
+
+#### Model statistics
+
+-   Compared to finalmod_both, the model finalmod_both_1 has an AIC value increased by 1.34, and adjusted R2 decreased by 0.0018.
+
+```{r}
+# install.packages("AICcmodavg")
+library(AICcmodavg)
+aictab(cand.set = list(finalmod_both, finalmod_both_1), modnames = c("finalmod_both", "finalmod_both_1"))
+
+finalmod_both_stats = c(summary(finalmod_both)$sigma, summary(finalmod_both)$r.squared, summary(finalmod_both)$adj.r.squared)
+finalmod_both_1_stats = c(summary(finalmod_both_1)$sigma, summary(finalmod_both_1)$r.squared, summary(finalmod_both_1)$adj.r.squared)
+stats = c("Residual standard error", "Multiple R-squared", "Adjusted R-squared")
+model_stats = data.frame(stats, finalmod_both_stats, finalmod_both_1_stats)
+model_stats
+```
+
+#### Residual plot and QQ-plot
+
+-   For both models, there does not appear to be any observable patterns in residual values beyond being centered around 0.
 
 ```{r}
 # Create the residual plot
 # TODO
-plot(finalmod_both$fitted.values, finalmod_both$residuals, xlab="Fitted Values", ylab="Residuals")
+plot(finalmod_both$fitted.values, finalmod_both$residuals, xlab="Fitted Values", ylab="Residuals", main = "finalmod_both Residual Plot")
 abline(a = 0, b = 0)
 lines(lowess(finalmod_both$fitted.values, finalmod_both$residuals), col = "blue", lwd = 2)
 
-plot(finalmod_both_1$fitted.values, finalmod_both$residuals, xlab="Fitted Values", ylab="Residuals")
+plot(finalmod_both_1$fitted.values, finalmod_both$residuals, xlab="Fitted Values", ylab="Residuals", main = "finalmod_both_1 Residual Plot")
 abline(a = 0, b = 0)
 lines(lowess(finalmod_both$fitted.values, finalmod_both$residuals), col = "blue", lwd = 2)
 ```
+
+-   The QQ-plots indicate the distribution of residuals are normal distributions for both models.
 
 ```{r}
-qqnorm(finalmod_both$residuals)
+qqnorm(finalmod_both$residuals, main = "finalmod_both Normal Q-Q Plot")
 qqline(finalmod_both$residuals)
 
-qqnorm(finalmod_both_1$residuals)
+qqnorm(finalmod_both_1$residuals, main = "finalmod_both_1 Normal Q-Q Plot")
 qqline(finalmod_both_1$residuals)
 ```
+
+-   By the parsimony principle, and due to our project question’s focus on inference, the model finalmod_both_1 was selected due to having fewer variables, and thus being easier to interpret, while producing similar results and a marginally worse fit to the data.
 
 ## Discussion
 
 ### **Analysis**
 
-The final regression model includes the following key variables: age, chemotherapy, hormone therapy, and tumor stage (specifically stages 2 and 3). It also accounts for the outcome of death from cancer (death from cancer and death from other causes) and incorporates interaction terms between age and chemotherapy, chemotherapy and tumor stage (for stages 2 and 3), as well as hormone therapy and tumor stage (for stages 2 and 3).
+The final regression model includes the following key variables: age, chemotherapy, hormone therapy, and tumor stage (specifically stages 2 and 3). It also accounts for the outcome of death from cancer (death from cancer and death from other causes) and incorporates interaction terms between chemotherapy and tumor stage (for stages 2 and 3), as well as hormone therapy and tumor stage (for stages 2 and 3).
 
-The results from the three model selection methods (bidirectional selection, backward selection, and forward selection) consistently provided the same set of covariates, and all of them are statistically significant on the 10% significance level, and only age_at_diagnosis:chemotherapy1, chemotherapy1:tumor_stage3, and hormone_therapy1:tumor_stage2 are not statistically significant on the 5% significance level. This consistency across methods enhances the credibility of the findings, indicating that the observed relationships are relatively reliable and not due to random chance.
+The results from the three model selection methods (bidirectional selection, backward selection, and forward selection) consistently provided the same set of covariates, and the covariates of the final regression model  are statistically significant on the 5% significance level. This consistency across methods enhances the credibility of the findings, indicating that the observed relationships are relatively reliable and not due to random chance.
 
-In the model selection, we discarded radiotherapy, indicating that it doesn’t provide a significant influence on the survival period of patients. For chemotherapy, the interaction terms between chemotherapy: tumor stage 2 and chemotherapy: tumor stage 3 provide insight into the relationship between tumor stage and chemotherapy. In tumor stage 1, the slope of -62.7677 shows the most negative correlation with survival. This negative effect diminishes in stage 2 with a slope of -69.5494, and further decreases in stage 3 with a slope of -60.5349. This indicates that while chemotherapy consistently reduces survival periods, its negative effects on survival are lower at higher tumor stages. 
+In the model selection, we discarded radiotherapy, indicating that it doesn’t provide a significant influence on the survival period of patients. For chemotherapy, the interaction terms between chemotherapy with tumor stage 2 and chemotherapy with tumor stage 3 provide insight into the relationship between tumor stage and chemotherapy. In tumor stage 1, the slope of -62.7677 shows the most negative correlation with survival. This negative effect diminishes in stage 2 with a slope of −25.9233, and further decreases in stage 3 with a slope of −11.8983. This indicates that while chemotherapy consistently reduces survival periods, its negative effects on survival are lower at higher tumor stages. 
 
-For hormone therapy, it initially reduces the survival period by 24.6917 units at tumor stage 1, but its effect decreases to a reduction of only 5.9808 units in stage 2, and it even leads to an increase in survival by 19.9754 units in stage 3. From tumor stage 1 to stage 3, the impact of hormone therapy changes from harmful to beneficial, ultimately improving survival chances. This highlights the importance of carefully considering the use of hormone therapy based on tumor stage.
+For hormone therapy, it initially reduces the survival period by 25.9323 at tumor stage 1, but its effect decreases to a reduction of only 5.206 units in stage 2, and it even leads to an increase in survival by 26.624 units in stage 3. From tumor stage 1 to stage 3, the impact of hormone therapy changes from harmful to beneficial, ultimately improving survival chances. This highlights the importance of carefully considering the use of hormone therapy based on tumor stage.
 
 To further validate the reliability of the model, the plot of fitted values versus residuals shows a good fit with residuals centered around zero, demonstrating homoscedasticity. Additionally, the residuals are randomly scattered without any discernible pattern beyond being centered around 0, suggesting that the errors are independent and that the relationship between the independent variables and the dependent variable is assumed to be linear. Furthermore, the points in the QQ plot align closely along the diagonal line, indicating that the residuals are approximately normally distributed. These observations confirm that the regression model does not violate the key assumptions of regression analysis, thereby minimizing the risk of drawing incorrect conclusions.
 
-### **Conclusion** 
+### **Conclusion**
 
-To address our initial research question, our model suggests that chemotherapy and hormone therapy have varying influences on survival time before death depending on the initial tumor stage while radiotherapy does not have a significant association with survival time before death. For chemotherapy,
+To address our initial research question, our model suggests that chemotherapy and hormone therapy have varying influences on survival time before death depending on the initial tumor stage while radiotherapy does not have a significant association with survival time before death. In general, our model suggests that chemotherapy has a negative association with survival time before death regardless of tumor stage level while hormone therapy has a negative association for patients with an initial tumor stage of 1 and 2 while it has a positive association when the patient’s original tumor stage was 3. Our model does not align with prior research as prior research suggests that chemotherapy is generally effective and increases the survival time before death. Similarly prior research suggests that hormone therapy and radiotherapy are generally effective at treating patients with IDC. However, our model aligns with prior research suggesting chemotherapy is most effective for later stages of cancer (Invasive Ductal Carcinoma, 2024).
+
+Our model likely differs from prior research due to some limitations in our model. One limitation of our model is our variable selection method. We used forward selection to obtain our model which is sensitive to the order of variables included and is unable to remove or add back variables. Furthermore, forward selection selects one variable at a time which could lead to overlooking important interaction and could also include variables that only marginally improve the fit of the model. Although we also used backwards selection to verify the validity of our model, backwards selection also comes with similar limitations as well. Moreover, our results may have skewed results as we use tumor stage 1 as our baseline since we did not have enough data points for tumor stage 0. Overall,  the limitations of our model are reflected by the relatively low adjusted R2 of 0.3713, which indicates our model only accounts for around 37.13% of the variability in survival time before death for IDC patients. 
 
 ## Appendix
 
