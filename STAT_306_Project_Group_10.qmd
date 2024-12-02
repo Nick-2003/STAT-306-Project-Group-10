@@ -458,7 +458,7 @@ histo_age_death
 
 ```{r}
 # fullmod = lm(overall_survival_months ~ .*.,data=cancer_new)
-fullformula = overall_survival_months ~ age_at_diagnosis + chemotherapy * hormone_therapy * radio_therapy + age_at_diagnosis : chemotherapy + age_at_diagnosis : hormone_therapy + age_at_diagnosis : radio_therapy + tumor_stage + tumor_stage : chemotherapy + tumor_stage : hormone_therapy + tumor_stage : radio_therapy + type_of_breast_surgery + death_from_cancer 
+fullformula = log(overall_survival_months) ~ age_at_diagnosis + chemotherapy * hormone_therapy * radio_therapy + age_at_diagnosis : chemotherapy + age_at_diagnosis : hormone_therapy + age_at_diagnosis : radio_therapy + tumor_stage + tumor_stage : chemotherapy + tumor_stage : hormone_therapy + tumor_stage : radio_therapy + type_of_breast_surgery + death_from_cancer 
 # + death_from_cancer : chemotherapy + death_from_cancer : hormone_therapy + death_from_cancer : radio_therapy
 
 fullmod = lm(fullformula, data=cancer_new)
@@ -475,7 +475,7 @@ summary(finalmod_backward)
 ```
 
 ```{r}
-nullmod = lm(overall_survival_months ~ 1, data = cancer_new)
+nullmod = lm(log(overall_survival_months) ~ 1, data = cancer_new)
 finalmod_forward = step(nullmod, scope = list(lower = nullmod, upper = fullmod), direction = "forward", trace = 0)
 summary(finalmod_forward)
 ```
@@ -483,9 +483,12 @@ summary(finalmod_forward)
 ### Model selection 2
 
 ```{r}
-summary(finalmod_both)
+# summary(finalmod_both)
 
-finalmod_both_1 = lm(formula = overall_survival_months ~ age_at_diagnosis + chemotherapy + hormone_therapy + tumor_stage + death_from_cancer + chemotherapy:tumor_stage + hormone_therapy:tumor_stage, data = cancer_new)
+# finalmod_both_1 = lm(formula = overall_survival_months ~ age_at_diagnosis + chemotherapy + hormone_therapy + tumor_stage + death_from_cancer + chemotherapy:tumor_stage + hormone_therapy:tumor_stage, data = cancer_new)
+finalmod_both_1 = lm(formula = log(overall_survival_months) ~ age_at_diagnosis + 
+    chemotherapy + hormone_therapy + tumor_stage + death_from_cancer + age_at_diagnosis:hormone_therapy + 
+    hormone_therapy:tumor_stage, data = cancer_new)
 summary(finalmod_both_1)
 ```
 
@@ -533,9 +536,16 @@ plot(finalmod_both$fitted.values, finalmod_both$residuals, xlab="Fitted Values",
 abline(a = 0, b = 0)
 lines(lowess(finalmod_both$fitted.values, finalmod_both$residuals), col = "blue", lwd = 2)
 
-plot(finalmod_both_1$fitted.values, finalmod_both$residuals, xlab="Fitted Values", ylab="Residuals", main = "finalmod_both_1 Residual Plot")
+plot(finalmod_both_1$fitted.values, finalmod_both_1$residuals, xlab="Fitted Values", ylab="Residuals", main = "finalmod_both_1 Residual Plot")
 abline(a = 0, b = 0)
 lines(lowess(finalmod_both$fitted.values, finalmod_both$residuals), col = "blue", lwd = 2)
+
+# finalmod_both_1_1 = lm(formula = log(overall_survival_months) ~ age_at_diagnosis + chemotherapy + hormone_therapy + tumor_stage + death_from_cancer + chemotherapy:tumor_stage + hormone_therapy:tumor_stage + , data = cancer_new)
+# 
+# plot(finalmod_both_1_1$fitted.values, finalmod_both_1_1$residuals, xlab="Fitted Values", ylab="Residuals", main = "finalmod_both_1_1 Residual Plot")
+# abline(a = 0, b = 0)
+# lines(lowess(finalmod_both$fitted.values, finalmod_both$residuals), col = "blue", lwd = 2)
+# summary(finalmod_both_1_1)
 ```
 
 -   The QQ-plots indicate the distribution of residuals are normal distributions for both models.
