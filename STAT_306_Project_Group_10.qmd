@@ -486,9 +486,7 @@ summary(finalmod_forward)
 # summary(finalmod_both)
 
 # finalmod_both_1 = lm(formula = overall_survival_months ~ age_at_diagnosis + chemotherapy + hormone_therapy + tumor_stage + death_from_cancer + chemotherapy:tumor_stage + hormone_therapy:tumor_stage, data = cancer_new)
-finalmod_both_1 = lm(formula = log(overall_survival_months) ~ age_at_diagnosis + 
-    chemotherapy + hormone_therapy + tumor_stage + death_from_cancer + age_at_diagnosis:hormone_therapy + 
-    hormone_therapy:tumor_stage, data = cancer_new)
+finalmod_both_1 = lm(formula = log(overall_survival_months) ~ age_at_diagnosis + chemotherapy + hormone_therapy + tumor_stage + death_from_cancer + age_at_diagnosis:hormone_therapy + hormone_therapy:tumor_stage, data = cancer_new)
 summary(finalmod_both_1)
 ```
 
