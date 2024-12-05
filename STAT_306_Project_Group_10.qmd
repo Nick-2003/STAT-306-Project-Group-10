@@ -446,7 +446,33 @@ histo_age_tumor
 histo_age_death
 ```
 
-### Model selection
+#### Variance Inflation Factor (VIF) on covariates
+
+-   VIF for each variable is calculated to test for multicollinearity, which could make it difficult to interpret coefficients, and it reduces the power of the model to identify statistically significant independent variables.
+
+-   `GVIF..1..2.Df..` is used for comparison due to different degrees of freedom for some variables.
+
+-   Horizontal line of VIF = 5 to indicate severe correlation of a variable with other variables; any variables with VIF \> 5 are to be removed to reduce multicollinearity in the model.
+
+-   `GVIF..1..2.Df..` for all variables are significantly lower than 5; multicollinearity between all variables is relatively low, thus no variables need to be removed.
+
+```{r}
+VIF_prep <- lm(overall_survival_months ~ ., data = cancer_new)
+cancer_MLR_add_inter_VIF <- data.frame(vif(VIF_prep))
+cancer_MLR_add_inter_VIF$variable <- c("age_at_diagnosis", "type_of_breast_surgery", "tumor_stage", "chemotherapy", "hormone_therapy", "radio_therapy", "death_from_cancer") 
+cancer_MLR_add_inter_VIF
+
+# VIF graph
+cancer_MLR_add_inter_VIF_vis <- ggplot(cancer_MLR_add_inter_VIF, aes(x = variable, y = GVIF..1..2.Df..)) +
+    geom_bar(stat = "identity") +
+    ggtitle("Adjusted VIF values for each variable") +
+    labs(x = "Variable", y = "Adjusted VIF") + 
+    geom_hline(yintercept = 5, linetype = "dashed", color = "red") +
+    theme(text = element_text(size = 14), axis.text.x = element_text(angle = 90))
+cancer_MLR_add_inter_VIF_vis
+```
+
+### Model selection 1
 
 -   As our goal is to determine how the various forms of therapy influence a patient's survival until death, interaction terms regarding all combinations of therapies will be considered, since it is unclear if the effect of one therapy will influence the effect of another (e.g. Chemotherapy and hormone therapy in similar timeframe).
 
@@ -558,42 +584,60 @@ qqline(finalmod_both_1$residuals)
 
 -   By the parsimony principle, and due to our project question’s focus on inference, the model finalmod_both_1 was selected due to having fewer variables, and thus being easier to interpret, while producing similar results and a marginally worse fit to the data.
 
-## Discussion
+## **Discussion**
 
 ### **Analysis**
 
-The final regression model includes the following key variables: age, chemotherapy, hormone therapy, and tumor stage (specifically stages 2 and 3). It also accounts for the outcome of death from cancer (death from cancer and death from other causes) and incorporates interaction terms between chemotherapy and tumor stage (for stages 2 and 3), as well as hormone therapy and tumor stage (for stages 2 and 3).
+The final regression model includes the following key variables: age, chemotherapy, hormone therapy, and tumor stage (specifically stages 2 and 3). It also accounts for the outcome of death from cancer (death from cancer and death from other causes) and incorporates interaction terms between age and hormone therapy, as well as hormone therapy and tumor stage (for stages 2 and 3).
 
-The results from the three model selection methods (bidirectional selection, backward selection, and forward selection) consistently provided the same set of covariates, and the covariates of the final regression model  are statistically significant on the 5% significance level. This consistency across methods enhances the credibility of the findings, indicating that the observed relationships are relatively reliable and not due to random chance.
+The results from bidirectional selection and backward selection consistently provided the same set of covariates, but the results from forward selection did not, possibly due to it missing covariates that are only significant in combination with other covariates. The covariates of the final regression model are all statistically significant on the 5% significance level, with the exception of the interaction term between age and hormone therapy. This consistency between bidirectional and backward selection enhances the credibility of the findings, indicating that the observed relationships are relatively robust and not due to random chance.
 
-In the model selection, we discarded radiotherapy, indicating that it doesn’t provide a significant influence on the survival period of patients. For chemotherapy, the interaction terms between chemotherapy with tumor stage 2 and chemotherapy with tumor stage 3 provide insight into the relationship between tumor stage and chemotherapy. In tumor stage 1, the slope of -62.7677 shows the most negative correlation with survival. This negative effect diminishes in stage 2 with a slope of −25.9233, and further decreases in stage 3 with a slope of −11.8983. This indicates that while chemotherapy consistently reduces survival periods, its negative effects on survival are lower at higher tumor stages. 
+In the model selection, we discarded radiotherapy, indicating that it doesn’t provide a significant influence on the survival period of patients. For chemotherapy, regardless of tumor stage, the survival period is reduced by a factor of e-0.189144. This indicates that chemotherapy consistently reduces survival periods, and its negative effects on survival do not change at higher tumor stages. 
 
-For hormone therapy, it initially reduces the survival period by 25.9323 at tumor stage 1, but its effect decreases to a reduction of only 5.206 units in stage 2, and it even leads to an increase in survival by 26.624 units in stage 3. From tumor stage 1 to stage 3, the impact of hormone therapy changes from harmful to beneficial, ultimately improving survival chances. This highlights the importance of carefully considering the use of hormone therapy based on tumor stage.
+For hormone therapy, it initially reduces the survival period by multiplying it by e-0.570923 at tumor stage 1, but its effect decreases to a multiplicative reduction by a factor of e-0.330478 in stage 2, and it even leads to a multiplicative increase in survival by a factor of e0.156058 in stage 3. From tumor stage 1 to stage 3, the impact of hormone therapy changes from harmful to beneficial, ultimately improving survival chances. This highlights the importance of carefully considering the use of hormone therapy based on tumor stage.
+
+The model shows a negative correlation between age_at_diagnosis and overall_survival_months, indicating that for each year of age (at the time of diagnosis), the patient’s months of survival is multiplied by e-0.011469. This indicates that younger cancer patients will have a higher chance of recovering from IDC (higher overall survival months). The presence of hormone therapy increases the factor of multiplication of age to e-0.003193, implying that the impact of age on survival months becomes less severe with hormone therapy.
+
+The final model shows that the intercept for patients who have died from disease is lower by -0.857409. This is consistent with the scatterplot between age/living condition from the exploratory analysis. The scatter plot does not show the two slopes to be parallel, which would have been accounted for by the interaction term between death_from_cancer and age_at_diagnosis; however, this term was removed during model selection due to low significance.
 
 To further validate the reliability of the model, the plot of fitted values versus residuals shows a good fit with residuals centered around zero, demonstrating homoscedasticity. Additionally, the residuals are randomly scattered without any discernible pattern beyond being centered around 0, suggesting that the errors are independent and that the relationship between the independent variables and the dependent variable is assumed to be linear. Furthermore, the points in the QQ plot align closely along the diagonal line, indicating that the residuals are approximately normally distributed. These observations confirm that the regression model does not violate the key assumptions of regression analysis, thereby minimizing the risk of drawing incorrect conclusions.
 
-### **Conclusion**
+### **Conclusion** 
 
-To address our initial research question, our model suggests that chemotherapy and hormone therapy have varying influences on survival time before death depending on the initial tumor stage while radiotherapy does not have a significant association with survival time before death. In general, our model suggests that chemotherapy has a negative association with survival time before death regardless of tumor stage level while hormone therapy has a negative association for patients with an initial tumor stage of 1 and 2 while it has a positive association when the patient’s original tumor stage was 3. Our model does not align with prior research as prior research suggests that chemotherapy is generally effective and increases the survival time before death. Similarly prior research suggests that hormone therapy and radiotherapy are generally effective at treating patients with IDC. However, our model aligns with prior research suggesting chemotherapy is most effective for later stages of cancer (Invasive Ductal Carcinoma, 2024).
+To address our initial research question, our model suggests that chemotherapy and hormone therapy have varying influences on survival time before death depending on the initial tumor stage while radiotherapy does not have a significant association with survival time before death. In general, our model suggests that chemotherapy has a negative association with survival time before death regardless of tumor stage level while hormone therapy has a negative association for patients with an initial tumor stage of 1 and 2 while it has a positive association when the patient’s original tumor stage was 3. Our model does not align with prior research as prior research suggests that chemotherapy is generally effective and increases the survival time before death. Similarly prior research suggests that hormone therapy and radiotherapy are generally effective at treating patients with IDC. However, our model aligns with prior research suggesting chemotherapy is most effective for later stages of cancer (Penn Medicine, n.d.).
 
-Our model likely differs from prior research due to some limitations in our model. One limitation of our model is our variable selection method. We used forward selection to obtain our model which is sensitive to the order of variables included and is unable to remove or add back variables. Furthermore, forward selection selects one variable at a time which could lead to overlooking important interaction and could also include variables that only marginally improve the fit of the model. Although we also used backwards selection to verify the validity of our model, backwards selection also comes with similar limitations as well. Moreover, our results may have skewed results as we use tumor stage 1 as our baseline since we did not have enough data points for tumor stage 0. Overall,  the limitations of our model are reflected by the relatively low adjusted R2 of 0.3713, which indicates our model only accounts for around 37.13% of the variability in survival time before death for IDC patients. 
+Our model likely differs from prior research due to several limitations in our model. One limitation is our variable selection method, a bidirectional stepwise selection starting with a full model. While bidirectional model selection allows for better flexibility and model fit onto the data, there is also the risk of the final model being overfitted to the existing data. Our response variable being the log of overall_survival_months in order to maintain homoscedasticity also makes our model estimates to be rather difficult to interpret. Moreover, our results may have been skewed from using tumor stage 1 as our baseline, since we did not have enough data points for tumor stage 0. Lastly, our model could not account for the context of the patients undergoing such treatments, such as the patients that took the treatment likely already being in poorer health than those that did not, or the side effects of such treatments impacting health, such as organ damage from chemotherapy (“Side effects of chemotherapy”, Canadian Cancer Society, 2024), osteoporosis from hormone therapy (“Side effects of hormone therapy”, Canadian Cancer Society, 2017) and low blood cell counts from radiation therapy (“Side effects of radiation therapy”, Canadian Cancer Society, 2017). Overall,  the limitations of our model are reflected by the relatively low adjusted R2 of 0.3103432 (7 s.f.), which indicates our model only accounts for around 31.03% (2 d.p.) of the variability in survival time before death for IDC patients. 
 
-## Appendix
+## **Sources** 
 
--   Breast cancer gene expression profiles (METABRIC). Kaggle. (2016, May 10). <https://www.kaggle.com/datasets/raghadalharbi/breast-cancer-gene-expression-profiles-metabric>
+-   Breast cancer gene expression profiles (METABRIC). Kaggle. (2016, May 10). <https://www.kaggle.com/datasets/raghadalharbi/breast-cancer-gene-expression-profiles-metabric>   
 
--   CBioPortal for Cancer Genomics. (n.d.). [https://www.cbioportal.org/study/summary?id=brca_metabric](#0)
+-   CBioPortal for Cancer Genomics. (n.d.). <https://www.cbioportal.org/study/summary?id=brca_metabric>
 
--   DePolo, J. (2024, October 2). Invasive ductal carcinoma (IDC). Breastcancer.org - Breast Cancer Information and Support. <https://www.breastcancer.org/types/invasive-ductal-carcinoma>
+-   DePolo, J. (2024, October 2). Invasive ductal carcinoma (IDC). Breastcancer.org - Breast Cancer Information and Support. <https://www.breastcancer.org/types/invasive-ductal-carcinoma>  
 
 -   Wright , P. (2023, March 21). Invasive ductal carcinoma (IDC). Johns Hopkins Medicine. <https://www.hopkinsmedicine.org/health/conditions-and-diseases/breast-cancer/invasive-ductal-carcinoma-idc#:~:text=Radiation%20therapy%20might%20be%20part,lymph%20nodes%2C%E2%80%9D%20Wright%20says>. 
 
 -   Tumor size and staging. Susan G. Komen®. (2024, May 2). <https://www.komen.org/breast-cancer/diagnosis/stages-staging/tumor-size/#:~:text=Tumor%20size%20is%20related%20to,the%20size%20of%20the%20tumor>. 
 
--   Given, B., & Given, C. W. (2008, December 15). Older adults and cancer treatment. Cancer. <https://pmc.ncbi.nlm.nih.gov/articles/PMC2606910/#S10>
+-   Given, B., & Given, C. W. (2008, December 15). Older adults and cancer treatment. Cancer. <https://pmc.ncbi.nlm.nih.gov/articles/PMC2606910/#S10> 
 
--   Hormone therapy for cancer. Cleveland Clinic. (2024, May 1).<https://my.clevelandclinic.org/health/treatments/17108-hormone-therapy-to-treat-cancer> 
+-   Hormone therapy for cancer. Cleveland Clinic. (2024, May 1).[ https://my.clevelandclinic.org/health/treatments/17108-hormone-therapy-to-treat-cancer](https://my.clevelandclinic.org/health/treatments/17108-hormone-therapy-to-treat-cancer) 
 
--   U.S. National Library of Medicine. (n.d.). Aging changes in hormone production: Medlineplus medical encyclopedia. MedlinePlus.<https://medlineplus.gov/ency/article/004000.htm#:~:text=In%20women%2C%20estrogen%20and%20prolactin,Cortisol> 
+-   U.S. National Library of Medicine. (n.d.). Aging changes in hormone production: Medlineplus medical encyclopedia. MedlinePlus.[ https://medlineplus.gov/ency/article/004000.htm#:\~:text=In%20women%2C%20estrogen%20and%20prolactin,Cortisol](https://medlineplus.gov/ency/article/004000.htm#:~:text=In%20women%2C%20estrogen%20and%20prolactin,Cortisol) 
 
--   Steinfeld, A. D., Diamond, J. J., Hanks, G. E., Coia, L. R., & Kramer, S. (1989). Patient age as a factor in radiotherapy. Data from the patterns of care study. Journal of the American Geriatrics Society, 37(4), 335–338.<https://doi.org/10.1111/j.1532-5415.1989.tb05501.x>
+-   Steinfeld, A. D., Diamond, J. J., Hanks, G. E., Coia, L. R., & Kramer, S. (1989). Patient age as a factor in radiotherapy. Data from the patterns of care study. Journal of the American Geriatrics Society, 37(4), 335–338.[ https://doi.org/10.1111/j.1532-5415.1989.tb05501.x](https://doi.org/10.1111/j.1532-5415.1989.tb05501.x) 
+
+-   Invasive Ductal Carcinoma. Cleveland Clinic  (June 27, 2024) [https://my.clevelandclinic.org/health/diseases/22117-invasive-ductal-carcinoma-idc](#0) 
+
+-   Penn Medicine. (n.d.). Invasive Ductal Carcinoma (IDC). Pennmedicine.org. <https://www.pennmedicine.org/cancer/types-of-cancer/breast-cancer/types-of-breast-cancer/invasive-ductal-carcinoma#:~:text=The%20IDC%20treatment%20your%20physician,focuses%20only%20on%20breast%20cancer>  
+
+<!-- -->
+
+-   “Treatment of breast cancer stages I-III”. (2024, September 22). Treatment of breast cancer stages I-III. American Cancer Society. <https://www.cancer.org/cancer/types/breast-cancer/treatment/treatment-of-breast-cancer-by-stage/treatment-of-breast-cancer-stages-i-iii.html#:~:text=The%20stage%20of%20your%20breast,gone%20through%20menopause%20or%20not> 
+
+-   Side effects of chemotherapy. Canadian Cancer Society. (2024, May). <https://cancer.ca/en/treatments/treatment-types/chemotherapy/side-effects-of-chemotherapy> 
+
+-   Side effects of hormone therapy. Canadian Cancer Society. (2017). <https://cancer.ca/en/treatments/treatment-types/hormone-therapy/side-effects-of-hormone-therapy> 
+
+-   Side effects of radiation therapy. Canadian Cancer Society. (2017b). <https://cancer.ca/en/treatments/treatment-types/radiation-therapy/side-effects-of-radiation-therapy> 
