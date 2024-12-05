@@ -10,21 +10,19 @@ execute:
 
 ## Nicholas Tam, Ivy Cheung, Kaichi Nakajima, Kevin Liu (Group 10)
 
-## Introduction
+## **Introduction** 
 
-Breast invasive ductal carcinoma (IDC) is the most common type of breast cancer, with about 80% of all forms of breast cancer being IDC, according to the American Cancer Society (DePolo, 2024). There are numerous nonsurgical treatments of IDC, such as radiotherapy, chemotherapy, and hormone therapy (Wright, 2023), and each their effectiveness is partly determined by the patient's condition, such as age and tumor stage. For instance, due to interactions between other treatments or conditions as a consequence of aging (e.g. Diabetes, liver disease, metabolism), more optimal doses of chemotherapy generally being discouraged for older patients due to potentially toxic side effects, implying a smaller difference in survival between older patients with or without chemotherapy (Given, Given, 2008). However, it is unclear how combinations of treatments can interact in a model to predict a patient’s survival until death.
+Breast invasive ductal carcinoma (IDC) is the most common type of breast cancer, with about 80% of all forms of breast cancer being IDC, according to the American Cancer Society (DePolo, 2024). There are numerous nonsurgical treatments of IDC, such as radiotherapy, chemotherapy, and hormone therapy (Wright, 2023), and each of their effectiveness is partly determined by the patient's condition, such as age and tumor stage. For instance, due to interactions between other treatments or conditions as a consequence of aging (e.g. Diabetes, liver disease, metabolism), more optimal doses of chemotherapy are generally discouraged for older patients due to potentially toxic side effects, implying a smaller difference in survival between older patients with or without chemotherapy (Given, Given, 2008). However, it is unclear how combinations of treatments can interact in a model to predict a patient’s survival until death.
 
 For our research project, we have selected a dataset of approximately 1900 primary breast cancer samples, obtained from the Molecular Taxonomy of Breast Cancer International Consortium (METABRIC) database through cBioPortal for Cancer Genomics.
 
-Our project question is:
+Our project question is: **"How do radiotherapy, chemotherapy, and hormone therapy influence the length of time a patient with IDC will survive, given control variables age, surgery type, tumor stage, and their present survival status?"**
 
-**"How do radiotherapy, chemotherapy, and hormone therapy influence the length of time a patient with IDC will survive, given control variables age, surgery type, tumor stage, and their present survival status?"**
-
-Our analysis will involve the inference of covariates within linear models, as we seek to determine the interaction of cancer therapies on allowing patients to survive longer.
+Our analysis will involve the inference of covariates within linear models, as we seek to determine the interaction of cancer therapies on allowing patients to survive longer from IDC. 
 
 -   Variables from columns 32 to 693 consist of genetic attributes containing m-RNA levels z-score for 331 genes, and mutation for 175 genes; they have been omitted due to being difficult to interpret.
--   Due to the distribution of "cancer_type_detailed" categories and for ease of computation, we will be filtering the dataset for IDC patients that are either alive or dead from disease, as IDC consists of the majority of the dataset, and the patients that have died from non-disease causes are not relevant to the project question and too nonspecific to be consistent.
--   "tumor_size" has been removed due to already partly contributing to "tumor_stage". (Susan G. Komen®, 2024)
+
+-   Due to the distribution of "cancer_type_detailed" categories and for ease of computation, we will be filtering the dataset for IDC patients that are either alive or dead from disease, as IDC consists of the majority of the dataset, and the patients that have died from other causes are irrelevant to the project question and not specific enough (e.g. Accident, non-cancer diseases).
 
 ## Analysis
 
@@ -42,13 +40,13 @@ library(car) # Applied regression tools, including VIF
 library(gridExtra) # Extensions for grid system
 ```
 
-### Uploading relevant table and cleaning data
+### **Uploading relevant table and cleaning data**
 
 -   All rows with "N/A" or "" for any relevant columns have been removed to ensure no data is missing.
 
 -   All categorical variables are transformed to be treated as categorical by the table.
 
--   After initial analysis, "tumor_stage==0" and "tumor_stage==4" have been removed due to lack of sufficient amounts of data points.
+-   After initial analysis, "tumor_stage==0" and "tumor_stage==4" have been removed due to lack of sufficient amounts of data points (1 case of stage 0 tumors, 5 cases of stage 4 tumors).
 
 ```{r}
 cancer = read.csv("METABRIC_RNA_Mutation.csv", header=TRUE)[,1:31]
@@ -79,9 +77,9 @@ summary(cancer_new)
 
 ### Exploratory data analysis
 
-#### Residual plot and QQ-plot
+#### **Residual plot and QQ-plot (overall_survival_months against age_at_diagnosis)**
 
--   There does not appear to be any observable patterns in residual values beyond being centered around 0.
+-   There does not appear to be any observable patterns in residual values beyond being centered around 0, though the slight variation in residual spread as fitted values increase may indicate heteroscedasticity.
 
 -   QQ-plot indicates distribution of residuals is light-tailed normal.
 
@@ -98,7 +96,7 @@ qqline(reg_start$residuals)
 
 -   overall_survival_months for those that took chemotherapy is generally lower than for those without in terms of mean and median, and the range of overall_survival_months is smaller.
 
--   Mean and median overall_survival_months for those that took hormone therapy are lower than those without, while the interquartile range for patients with hormone therapy is smaller than for those without.
+-   Mean and median overall_survival_months for patients with hormone therapy are lower than those without, while the interquartile range for those with hormone therapy is smaller than for those without.
 
 -   Boxplots for overall_survival_months against each radio_therapy class are extremely similar, including the mean and median values.
 
@@ -226,7 +224,7 @@ grid.arrange(box_age_chemo, box_age_hormo, box_age_radio, nrow = 1)
 grid.arrange(box_age_type, box_age_tumor, box_age_death, nrow = 1)
 ```
 
-#### Scatterplots of survival against interactions between age and categorical variables
+#### **Scatterplots of survival against interactions between age and categorical variables**
 
 -   overall_survival_months varies significantly by chemotherapy, tumor_stage, and death_from_cancer, and the interaction terms for age with chemotherapy, type_of_breast_surgery, tumor_stage, and death_from_cancer appear to be statistically significant.
 
@@ -342,19 +340,17 @@ plot_age_tumor
 plot_age_death
 ```
 
-#### Histograms of survival against interactions between age and categorical variables
+#### **Histograms of survival against interactions between age and categorical variables**
 
--   The histogram for those that took chemotherapy compared to that for those without chemotherapy is significantly more skewed to the right.
+-   The histograms for those that took chemotherapy, mastectomy or had died from disease compared to those without chemotherapy, with breast preserving surgery or are alive respectively are significantly more skewed to the right.
 
 -   Histogram peaks for those that took hormone therapy are generally greater than for those without hormone therapy within the range of overall_survival_months between 45 and 195.
 
 -   The histogram distributions between radio therapy categories are relatively similar.
 
--   The histogram for those that took mastectomy compared to that for those with breast preserving surgery is significantly more skewed to the right.
-
 -   The histogram for those with stage 3 tumors compared to that for the other tumor stages is significantly more skewed to the right.
 
--   The histogram for those that died from disease is significantly skewed to the right, while the histogram for those that lived is significantly skewed to the left in comparison.
+-   Given our exploratory analysis on overall_survival_months within boxplots and histograms, we will assume that the overall distribution of the variable is skewed to the right, and thus may have heteroscedasticity; as such, a log transformation would be beneficial for model fitting. 
 
 ```{r}
 histo_age_type <- ggplot(cancer_new, aes(x = overall_survival_months, y = after_stat(density), fill = type_of_breast_surgery)) + 
@@ -450,11 +446,11 @@ histo_age_death
 
 -   VIF for each variable is calculated to test for multicollinearity, which could make it difficult to interpret coefficients, and it reduces the power of the model to identify statistically significant independent variables.
 
--   `GVIF..1..2.Df..` is used for comparison due to different degrees of freedom for some variables.
+-   GVIF..1..2.Df.. is used for comparison due to different degrees of freedom for some variables.
 
 -   Horizontal line of VIF = 5 to indicate severe correlation of a variable with other variables; any variables with VIF \> 5 are to be removed to reduce multicollinearity in the model.
 
--   `GVIF..1..2.Df..` for all variables are significantly lower than 5; multicollinearity between all variables is relatively low, thus no variables need to be removed.
+-   GVIF..1..2.Df.. for all variables are significantly lower than 5; multicollinearity between all variables is relatively low, thus no variables need to be removed.
 
 ```{r}
 VIF_prep <- lm(overall_survival_months ~ ., data = cancer_new)
@@ -472,15 +468,23 @@ cancer_MLR_add_inter_VIF_vis <- ggplot(cancer_MLR_add_inter_VIF, aes(x = variabl
 cancer_MLR_add_inter_VIF_vis
 ```
 
-### Model selection 1
+### **Model selection 1**
 
--   As our goal is to determine how the various forms of therapy influence a patient's survival until death, interaction terms regarding all combinations of therapies will be considered, since it is unclear if the effect of one therapy will influence the effect of another (e.g. Chemotherapy and hormone therapy in similar timeframe).
+-   As our goal is to determine how the various forms of therapy influence a patient's survival until death, interaction terms regarding all combinations of therapies are considered, since it is unclear if the effect of one therapy will influence the effect of another (e.g. Chemotherapy and hormone therapy in similar timeframe).
 
 -   Interaction terms for age and each type of therapy are included, as prior studies have indicated varying degrees of influence between age and treatment method (Given, Given 2008; Cleveland Clinic, 2024; U.S. National Library of Medicine; Steinfeld, Diamond, Hanks, Coia, Kramer, 1989).
 
--   Interaction terms for tumor_stage and each type of therapy are also included since prior studies have indicated that the type of treatment a patient receives is influenced by the stage, size of tumor and the spread of cancer cells. (“Invasive Ductal Carcinoma”, 2024;”Treatment of breast cancer”, 2024)
+-   Interaction terms for tumor_stage and each type of therapy are also included since prior studies have indicated that the type of treatment a patient receives is influenced by the stage, size of tumor and the spread of cancer cells. (“Invasive Ductal Carcinoma”, 2024; “Treatment of breast cancer”, 2024)
 
--   Due to not being significant parts of the question of interest and the indeterminate interaction between them and the therapies, interaction terms for type_of_breast_surgery and death_from_cancer are ignored for the full model.
+-   Due to not being significant parts of the question of interest and the indeterminate interaction between them and the therapies, interaction terms for type_of_breast_surgery and death_from_cancer are ignored for the full model. 
+
+-   We had attempted to fit linear models without the log transformation, and the resulting residual plots had demonstrated heteroscedasticity.
+
+-   Full model: log(overall_survival_months) \~ age_at_diagnosis + chemotherapy \* hormone_therapy \* radio_therapy + age_at_diagnosis : chemotherapy + age_at_diagnosis : hormone_therapy + age_at_diagnosis : radio_therapy + tumor_stage + tumor_stage : chemotherapy + tumor_stage : hormone_therapy + tumor_stage : radio_therapy + type_of_breast_surgery + death_from_cancer 
+
+-   Forward and backward AIC selection with the same full model was attempted, but only backward selection produced the same model, while forward selection produced a less optimal model.
+
+-   Model finalmod_both has age_at_diagnosis:chemotherapy1 and hormone_therapy1:tumor_stage2 to be not statistically significant on the 5% significance level.
 
 ```{r}
 # fullmod = lm(overall_survival_months ~ .*.,data=cancer_new)
@@ -506,7 +510,13 @@ finalmod_forward = step(nullmod, scope = list(lower = nullmod, upper = fullmod),
 summary(finalmod_forward)
 ```
 
-### Model selection 2
+### **Model selection 2**
+
+-   finalmod_both was compared to a version of the final model without interaction term age_at_diagnosis:chemotherapy1 (finalmod_both_1), as indicated below. 
+
+-   Model finalmod_both_1 has all terms to be statistically significant on the 5% level.
+
+-   This model uses living, stage 1 cancer patients without chemo or hormone therapy as the baseline.
 
 ```{r}
 # summary(finalmod_both)
