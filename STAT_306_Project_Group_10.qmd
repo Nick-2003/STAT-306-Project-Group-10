@@ -85,10 +85,11 @@ summary(cancer_new)
 
 ```{r}
 reg_start = lm(overall_survival_months~age_at_diagnosis,data=cancer_new)
-plot(reg_start$fitted.values, reg_start$residuals, xlab="Fitted Values", ylab="Residuals")
+plot(reg_start$fitted.values, reg_start$residuals, xlab="Fitted Values", ylab="Residuals", main = "Residual Plot")
 abline(a = 0, b = 0)
 lines(lowess(reg_start$fitted.values, reg_start$residuals), col = "blue", lwd = 2)
-qqnorm(reg_start$residuals)
+
+qqnorm(reg_start$residuals, main = "Normal Q-Q Plot")
 qqline(reg_start$residuals)
 ```
 
@@ -310,10 +311,6 @@ plot_age_tumor <- ggplot(cancer_new, aes(x = age_at_diagnosis, y = overall_survi
        y = "Overall Survival (Months)", 
        color = "Tumor Stage")
 
-# reg_3_1 = lm(overall_survival_months~age_at_diagnosis+radio_therapy,data=cancer_new)  # TODO
-# summary(reg_3_1)
-# scatterplot(overall_survival_months~age_at_diagnosis+radio_therapy, data=cancer_new, smooth=FALSE, main="Overall Survival against Age and Radio Therapy", xlab="Age (Years)", ylab="Overall Survival (Months)")
-
 reg_death = lm(overall_survival_months~age_at_diagnosis*death_from_cancer,data=cancer_new)  # TODO
 summary(reg_death)
 plot_age_death <- ggplot(cancer_new, aes(x = age_at_diagnosis, y = overall_survival_months, color = death_from_cancer)) +
@@ -528,7 +525,10 @@ summary(finalmod_both_1)
 
 ### Model comparisons
 
--   regsubsets() applied to the original full model
+-   regsubsets() applied to the original full model.
+-   For the selected best subsets with 11 and 12 parameters, both contain the parameters age_at_diagnosis, chemotherapy1, hormone_therapy1, tumor_stage2, death_from_cancerDied of Disease, age_at_diagnosis:chemotherapy, age_at_diagnosis:hormone_therapy1, hormone_therapy1:tumor_stage3 and radio_therapy1:tumor_stage3; the interaction term radio_therapy1:tumor_stage3 was not present in finalmod_both or finalmod_both_1.
+-   The parameters tumor_stage3 and hormone_therapy1:tumor_stage2 are included for the selected best subset with 11 parameters but not the selected best subset with 12 parameters, though both were present in finalmod_both and finalmod_both_1. 
+-   The parameters chemotherapy1:hormone_therapy1, hormone_therapy1:radio_therapy1 and age_at_diagnosis:radio_therapy1 are included for the selected best subset with 12 parameters but not the selected best subset with 11 parameters, but the interaction terms involving radiotherapy are not present in finalmod_both or finalmod_both_1.
 
 ```{r}
 library(leaps)
@@ -539,7 +539,6 @@ summary(finalmod_reg)
 results <- as.data.frame(summary(finalmod_reg)$which)
 results$adj_r_squared <- summary(finalmod_reg)$adjr2
 results <- results[, c("adj_r_squared", names(results)[-which(names(results) == "adj_r_squared")])]
-print(results)
 write.csv(results, "finalmod_reg_results.csv", row.names = FALSE)
 ```
 
