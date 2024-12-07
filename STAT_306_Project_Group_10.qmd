@@ -10,7 +10,7 @@ execute:
 
 ## Nicholas Tam, Ivy Cheung, Kaichi Nakajima, Kevin Liu (Group 10)
 
-## **Introduction** 
+## **Introduction**
 
 Breast invasive ductal carcinoma (IDC) is the most common type of breast cancer, with about 80% of all forms of breast cancer being IDC, according to the American Cancer Society (DePolo, 2024). There are numerous nonsurgical treatments of IDC, such as radiotherapy, chemotherapy, and hormone therapy (Wright, 2023), and each of their effectiveness is partly determined by the patient's condition, such as age and tumor stage. For instance, due to interactions between other treatments or conditions as a consequence of aging (e.g. Diabetes, liver disease, metabolism), more optimal doses of chemotherapy are generally discouraged for older patients due to potentially toxic side effects, implying a smaller difference in survival between older patients with or without chemotherapy (Given, Given, 2008). However, it is unclear how combinations of treatments can interact in a model to predict a patient’s survival until death.
 
@@ -611,13 +611,13 @@ The final model shows that the intercept for patients who have died from disease
 
 To further validate the reliability of the model, the plot of fitted values versus residuals shows a good fit with residuals centered around zero, demonstrating homoscedasticity. Additionally, the residuals are randomly scattered without any discernible pattern beyond being centered around 0, suggesting that the errors are independent and that the relationship between the independent variables and the dependent variable is assumed to be linear. Furthermore, the points in the QQ plot align closely along the diagonal line, indicating that the residuals are approximately normally distributed. These observations confirm that the regression model does not violate the key assumptions of regression analysis, thereby minimizing the risk of drawing incorrect conclusions.
 
-### **Conclusion** 
+### **Conclusion**
 
 To address our initial research question, our model suggests that chemotherapy and hormone therapy have varying influences on survival time before death depending on the initial tumor stage while radiotherapy does not have a significant association with survival time before death. In general, our model suggests that chemotherapy has a negative association with survival time before death regardless of tumor stage level while hormone therapy has a negative association for patients with an initial tumor stage of 1 and 2 while it has a positive association when the patient’s original tumor stage was 3. Our model does not align with prior research as prior research suggests that chemotherapy is generally effective and increases the survival time before death. Similarly prior research suggests that hormone therapy and radiotherapy are generally effective at treating patients with IDC. However, our model aligns with prior research suggesting chemotherapy is most effective for later stages of cancer (Penn Medicine, n.d.).
 
 Our model likely differs from prior research due to several limitations in our model. One limitation is our variable selection method, a bidirectional stepwise selection starting with a full model. While bidirectional model selection allows for better flexibility and model fit onto the data, there is also the risk of the final model being overfitted to the existing data. Our response variable being the log of overall_survival_months in order to maintain homoscedasticity also makes our model estimates to be rather difficult to interpret. Moreover, our results may have been skewed from using tumor stage 1 as our baseline, since we did not have enough data points for tumor stage 0. Lastly, our model could not account for the context of the patients undergoing such treatments, such as the patients that took the treatment likely already being in poorer health than those that did not, or the side effects of such treatments impacting health, such as organ damage from chemotherapy (“Side effects of chemotherapy”, Canadian Cancer Society, 2024), osteoporosis from hormone therapy (“Side effects of hormone therapy”, Canadian Cancer Society, 2017) and low blood cell counts from radiation therapy (“Side effects of radiation therapy”, Canadian Cancer Society, 2017). Overall,  the limitations of our model are reflected by the relatively low adjusted R2 of 0.3103432 (7 s.f.), which indicates our model only accounts for around 31.03% (2 d.p.) of the variability in survival time before death for IDC patients. 
 
-## **Sources** 
+## **Sources**
 
 -   Breast cancer gene expression profiles (METABRIC). Kaggle. (2016, May 10). <https://www.kaggle.com/datasets/raghadalharbi/breast-cancer-gene-expression-profiles-metabric>   
 
@@ -631,11 +631,11 @@ Our model likely differs from prior research due to several limitations in our m
 
 -   Given, B., & Given, C. W. (2008, December 15). Older adults and cancer treatment. Cancer. <https://pmc.ncbi.nlm.nih.gov/articles/PMC2606910/#S10> 
 
--   Hormone therapy for cancer. Cleveland Clinic. (2024, May 1).[ https://my.clevelandclinic.org/health/treatments/17108-hormone-therapy-to-treat-cancer](https://my.clevelandclinic.org/health/treatments/17108-hormone-therapy-to-treat-cancer) 
+-   Hormone therapy for cancer. Cleveland Clinic. (2024, May 1).<https://my.clevelandclinic.org/health/treatments/17108-hormone-therapy-to-treat-cancer> 
 
--   U.S. National Library of Medicine. (n.d.). Aging changes in hormone production: Medlineplus medical encyclopedia. MedlinePlus.[ https://medlineplus.gov/ency/article/004000.htm#:\~:text=In%20women%2C%20estrogen%20and%20prolactin,Cortisol](https://medlineplus.gov/ency/article/004000.htm#:~:text=In%20women%2C%20estrogen%20and%20prolactin,Cortisol) 
+-   U.S. National Library of Medicine. (n.d.). Aging changes in hormone production: Medlineplus medical encyclopedia. MedlinePlus.<https://medlineplus.gov/ency/article/004000.htm#:~:text=In%20women%2C%20estrogen%20and%20prolactin,Cortisol> 
 
--   Steinfeld, A. D., Diamond, J. J., Hanks, G. E., Coia, L. R., & Kramer, S. (1989). Patient age as a factor in radiotherapy. Data from the patterns of care study. Journal of the American Geriatrics Society, 37(4), 335–338.[ https://doi.org/10.1111/j.1532-5415.1989.tb05501.x](https://doi.org/10.1111/j.1532-5415.1989.tb05501.x) 
+-   Steinfeld, A. D., Diamond, J. J., Hanks, G. E., Coia, L. R., & Kramer, S. (1989). Patient age as a factor in radiotherapy. Data from the patterns of care study. Journal of the American Geriatrics Society, 37(4), 335–338.<https://doi.org/10.1111/j.1532-5415.1989.tb05501.x> 
 
 -   Invasive Ductal Carcinoma. Cleveland Clinic  (June 27, 2024) [https://my.clevelandclinic.org/health/diseases/22117-invasive-ductal-carcinoma-idc](#0) 
 
